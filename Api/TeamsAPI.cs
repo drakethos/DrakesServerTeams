@@ -9,12 +9,16 @@ namespace DrakesServerTeams;
 /// <para>
 /// The server (dedicated server or host) is the only authority. On the authority every method answers for
 /// any player. On a plain client only the local player's own team is known: other players read as
-/// unassigned, and <see cref="AreSameTeam"/> is false unless both are the local player.
+/// unassigned by ID. The <see cref="Player"/> overloads also work on clients for any visible player, using
+/// the team each player publishes on its ZDO (a display hint that a modified client can fake).
 /// </para>
 /// </summary>
 public static class TeamsAPI
 {
     public static bool IsLoaded() => true;
+
+    /// <summary>ZDO key (string team id) the owning client writes on its own player. Read it through <see cref="GetTeamId(Player)"/>.</summary>
+    public static readonly int TeamZdoKey = "DrakesServerTeams_team".GetStableHashCode();
 
     /// <summary>True on the dedicated server or the host, where team data lives.</summary>
     public static bool IsAuthority => TeamsNet.IsAuthority;
@@ -27,8 +31,21 @@ public static class TeamsAPI
         return IsLocalPlayerId(playerId) ? TeamsClientState.OwnTeamId : null;
     }
 
-    public static string? GetTeamId(Player? player) =>
-        player == null ? null : GetTeamId(player.GetPlayerID());
+    /// <summary>
+    /// Team of a player object. The authority answers from its registry. A client reads the team the
+    /// player published on its ZDO (so it works for any visible player), which is a display hint, not proof.
+    /// </summary>
+    public static string? GetTeamId(Player? player)
+    {
+        if (player == null)
+            return null;
+        if (IsAuthority)
+            return GetTeamId(player.GetPlayerID());
+        if (player == Player.m_localPlayer)
+            return TeamsClientState.OwnTeamId;
+        var id = player.GetComponent<ZNetView>()?.GetZDO()?.GetString(TeamZdoKey, "");
+        return string.IsNullOrEmpty(id) ? null : id;
+    }
 
     public static TeamDefinition? GetTeam(string? teamId) =>
         IsAuthority ? TeamRegistry.Instance.GetTeam(teamId) : TeamsClientState.GetTeam(teamId);
@@ -43,8 +60,11 @@ public static class TeamsAPI
         return ta != null && string.Equals(ta, GetTeamId(b), StringComparison.OrdinalIgnoreCase);
     }
 
-    public static bool AreSameTeam(Player? a, Player? b) =>
-        a != null && b != null && AreSameTeam(a.GetPlayerID(), b.GetPlayerID());
+    public static bool AreSameTeam(Player? a, Player? b)
+    {
+        var ta = GetTeamId(a);
+        return ta != null && string.Equals(ta, GetTeamId(b), StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     /// Server-side assignment for other mods and tools. Ignores Joinable and Locked (those limit what a

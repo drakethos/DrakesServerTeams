@@ -56,9 +56,21 @@ Decisions made while building it (change them here if wrong):
 - **Account keying** (config option in the brief) is **not** in 0.1.0. It needs a different key type end to end and a policy for what a "same person, new character" does.
 - **Privacy self-service erase** is admin-mediated (`teams forget`). A player-run erase would bypass `Locked`; decide before adding it.
 
-## Open for Phase 2 (decide before starting)
-- **Clients only know their own team.** That honors "clients get only their own team and teammates' display data". But LockSmith/RenameIt hover text ("can I open this ward?") runs on the client and needs "is the ward owner on my team". Options: (a) team checks only on the server, client UI shows a neutral hint; (b) the server sends each client an opaque per-session token set for its teammates; (c) publish the team id on every player's ZDO (also what Phase 3 name-hiding and Phase 4 PvP need, but every client then sees every visible player's team). (c) is the simplest and probably wanted for PvP; it is a privacy decision, so it is yours.
-- LockSmith hook points (`IWardCompatModule`, `LockSmithCompatApi`) have not been read yet: the LockSmith repo is available but was out of scope for Phase 1.
+## Decisions for Phase 2 (made with the owner)
+- **Teams are visible on players.** The owning client publishes its team id on its player ZDO (`TeamsAPI.TeamZdoKey`); `TeamsAPI.GetTeamId(Player)` / `AreSameTeam(Player, Player)` read it on any client. It is a display and hint value: a modified client can fake its own. Character IDs still never leave the server.
+- **Vocabulary.** In player-facing text "Team" means the server team. LockSmith's existing per-chest Personal/**Team** guest list is renamed **Group** (its code already says `GroupAccessState`, `GroupStore`, `locksmith_group_mode`). Note this "Group" is LockSmith's per-chest list, not Smoothbrain Groups parties. The LockSmith rename is its own LockSmith release.
+
+## What reading LockSmith 0.6.0-beta.3 changed
+- `IWardCompatModule` / `LockSmithCompatApi.Register` is **not** the team hook. It models ward *stacks* (vanilla, WardIsLove, ProtectiveWards...): "is this point inside an enabled ward, and what access does a player have". A Teams module there would only answer "ward coverage", not "same team as the owner".
+- The real decision points are: `PrivateAreaAccess.IsPermitted(area, playerId)` (ward permitted list, reflection wrapper because the live members are private), `GroupAccessState.HasTeamAccess(container, playerId)` and `PieceGuestAccess.IsGuest(nview, playerId)` (chest/door guest lists), and `Patches/PrivateAreaPatches.cs`, `ContainerAccessPatches.cs`, `DoorAccessPatches.cs`.
+- All of them decide by **creator ID** (`Piece.GetCreator()`, a stored player ID). Clients must not receive character IDs, and in Valheim the check often runs on the *owner peer's* client, not the server. So "is the creator on my team" cannot be answered from IDs on an arbitrary client.
+- **Proposed fix: stamp the creator's team on the piece.** When a player places a ward/chest/door, their client writes `creatorTeam` (team id) on the piece ZDO next to the creator ID. The check becomes "my team == piece.creatorTeam", needs no IDs, works on any peer, and reads the same value on hover. Trade-offs: pieces keep the team they were placed under (moving teams does not transfer them; wards/chests of a player who changes teams should probably stop matching, so compare against the stamp, not the creator's current team); a modified client could stamp a fake team on its own pieces, which only affects its own pieces.
+- Proposed LockSmith change (separate LockSmith release): add a "Team" access option on chests/doors/wards that is true when `TeamsAPI.GetTeamId(player) == piece.creatorTeam`, provided by a soft-dependency class (LockSmith never hard-requires Teams). Teams ships the stamping patch only while LockSmith or RenameIt is present (dormant otherwise).
+- RenameIt: not read yet. Same question for "whoever can build/remove".
+
+## Open for Phase 2
+- Approve the creator-team stamp above (or choose another way to answer "same team as owner" without IDs).
+- Whether a ward's permitted list should also accept "my team" (vanilla wards have no creator-team concept beyond the creator and the permitted list).
 - Libs could gain `DrakePlayerIdentity.IsAdminPeer(ZNetPeer)`; Teams has its own copy in `PeerIdentity` because changing Libs is a separate release.
 
 ## Not verified against the live game

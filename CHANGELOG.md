@@ -9,4 +9,5 @@
 - Console command `teams` (F5): `teams`, `teams join <team>`; admins: `teams who`, `teams assign <player> <team>`, `teams forget <player|id:N>`.
 - `TeamsAPI`: `GetTeamId`, `GetTeam`, `GetTeams`, `AreSameTeam`, `TryAssign`, `Forget`, `RegisterOnTeamChanged` (authority), `RegisterOnOwnTeamChanged` (client).
 - Config through DrakeModsLibs `DrakeConfigSync`. Requires DrakeModsLibs 0.11.2.
+- The player's team is published on their ZDO (display hint); `TeamsAPI.GetTeamId(Player)` / `AreSameTeam(Player, Player)` work on clients for any visible player.
 - Not yet: compat with LockSmith / RenameIt, name hiding, PvP rules, team wards, spawn points, banners, creature factions.

@@ -142,10 +142,25 @@ public static class TeamsNet
         var hadTeam = TeamsClientState.OwnTeamId != null;
         var firstState = !TeamsClientState.Ready;
         TeamsClientState.Apply(own, mode, canSwitch, teams);
+        PublishOwnTeam();
         if (firstState && !hadTeam && TeamsClientState.OwnTeamId == null && mode == AssignmentMode.PlayerChoice)
             Say("Pick a team: open the console (F5) and type  teams join <team>.  Teams: " + JoinIds(TeamsClientState.Teams, joinableOnly: true));
         else if (firstState && TeamsClientState.OwnTeamId != null)
             Say("Team: " + (TeamsClientState.GetTeam(TeamsClientState.OwnTeamId)?.DisplayName ?? TeamsClientState.OwnTeamId));
+    }
+
+    /// <summary>
+    /// Puts the team id on the local player's ZDO so every client can read the team of any visible player.
+    /// Display and client-side hints only: the owning client writes it, so it can be faked by a modified
+    /// client. Anything that must be enforced asks the authority (<see cref="TeamsAPI"/> on the server).
+    /// </summary>
+    static void PublishOwnTeam()
+    {
+        var player = Player.m_localPlayer;
+        var zdo = player != null ? player.GetComponent<ZNetView>()?.GetZDO() : null;
+        if (zdo == null)
+            return;
+        zdo.Set(TeamsAPI.TeamZdoKey, TeamsClientState.OwnTeamId ?? "");
     }
 
     public static string JoinIds(IEnumerable<TeamDefinition> teams, bool joinableOnly)
