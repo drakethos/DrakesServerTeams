@@ -1,0 +1,14 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- Copy to environment.props at suite root (gitignored). Child projects may add their own environment.props with only overrides. -->
+    <ValheimGamePath>C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimGamePath>
+    <R2ModPath>C:\Users\YOUR_USER\AppData\Roaming\r2modmanPlus-local\Valheim\profiles</R2ModPath>
+    <ProfileName>DrakesCust</ProfileName>
+
+    <BepInExPath>$(R2ModPath)\$(ProfileName)\BepInEx</BepInExPath>
+    <CorlibPath>$(ValheimGamePath)\valheim_Data\Managed</CorlibPath>
+    <PublicizedAssembliesPath>$(ValheimGamePath)\valheim_Data\Managed\publicized_assemblies</PublicizedAssembliesPath>
+
+    <AfterTargets>Build</AfterTargets>
+  </PropertyGroup>
+</Project>

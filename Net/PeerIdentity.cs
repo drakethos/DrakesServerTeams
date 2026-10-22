@@ -1,0 +1,85 @@
+using System.Reflection;
+using HarmonyLib;
+
+namespace DrakesServerTeams;
+
+/// <summary>
+/// Server-side: who is behind an RPC sender. The character ID is read from the player's own ZDO, never from
+/// the message, so a client cannot claim somebody else's ID.
+/// </summary>
+public static class PeerIdentity
+{
+    // Same rule as DrakePlayerIdentity in Libs, but for a peer instead of a Player: the admin list holds
+    // platform host IDs, and ZNet.m_adminList / ListContainsId are private in the real game (reflection only).
+    static readonly FieldInfo? AdminListField = AccessTools.Field(typeof(ZNet), "m_adminList");
+    static readonly MethodInfo? ListContainsIdMethod = AccessTools.Method(typeof(ZNet), "ListContainsId");
+    static readonly int PlayerIdHash = "playerID".GetStableHashCode();
+
+    public static bool IsHostLocal(long sender) =>
+        ZRoutedRpc.instance != null && sender == ZRoutedRpc.instance.GetServerPeerID();
+
+    /// <summary>False while the sender's character has not spawned yet.</summary>
+    public static bool TryResolve(long sender, out long characterId, out string name)
+    {
+        characterId = 0;
+        name = "";
+        if (ZNet.instance == null)
+            return false;
+
+        if (IsHostLocal(sender))
+        {
+            // Listen server: the host plays locally and has no ZNetPeer.
+            var local = Player.m_localPlayer;
+            if (local == null)
+                return false;
+            characterId = local.GetPlayerID();
+            name = local.GetPlayerName();
+            return characterId != 0;
+        }
+
+        var peer = ZNet.instance.GetPeer(sender);
+        if (peer == null || ZDOMan.instance == null)
+            return false;
+        var zdo = ZDOMan.instance.GetZDO(peer.m_characterID);
+        if (zdo == null)
+            return false;
+        characterId = zdo.GetLong(PlayerIdHash, 0L);
+        name = peer.m_playerName ?? "";
+        return characterId != 0;
+    }
+
+    public static bool IsAdmin(long sender)
+    {
+        if (ZNet.instance == null)
+            return false;
+        if (IsHostLocal(sender))
+            return true;
+        try
+        {
+            var hostId = ZNet.instance.GetPeer(sender)?.m_socket?.GetHostName();
+            var adminList = AdminListField?.GetValue(ZNet.instance);
+            return adminList != null
+                   && !string.IsNullOrEmpty(hostId)
+                   && ListContainsIdMethod?.Invoke(ZNet.instance, new[] { adminList, hostId }) is true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>The RPC sender (peer uid) of a connected character, or null when offline.</summary>
+    public static long? FindSender(long characterId)
+    {
+        if (ZNet.instance == null)
+            return null;
+        if (Player.m_localPlayer != null && !ZNet.instance.IsDedicated() && Player.m_localPlayer.GetPlayerID() == characterId)
+            return ZRoutedRpc.instance?.GetServerPeerID();
+        foreach (var peer in ZNet.instance.GetPeers())
+        {
+            if (TryResolve(peer.m_uid, out var id, out _) && id == characterId)
+                return peer.m_uid;
+        }
+        return null;
+    }
+}

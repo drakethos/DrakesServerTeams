@@ -1,0 +1,20 @@
+<Project>
+  <!-- Mirrors DrakeModsLibs/mod.package.props. Consumer mod: no EmbedServerSync, no ILRepack of Libs. -->
+  <PropertyGroup>
+    <ThunderstoreName>DrakesServerTeams</ThunderstoreName>
+    <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
+    <RootNamespace>DrakesServerTeams</RootNamespace>
+    <AssemblyName>DrakesServerTeams</AssemblyName>
+    <Version>0.1.0</Version>
+    <BepInPluginName>DrakesServerTeams</BepInPluginName>
+    <BepInGuid>com.drakemods.serverteams</BepInGuid>
+    <ModInfoClass>DrakesServerTeamsPlugin</ModInfoClass>
+    <Description>Server-wide teams for Valheim: admin-assigned sides, team PvP rules, and team permissions for wards and locks.</Description>
+    <WebsiteUrl>https://github.com/drakethos/DrakesServerTeams</WebsiteUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2351" />
+    <ThunderstoreDependency Include="ValheimModding-Jotunn-2.30.2" />
+    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-0.11.2" />
+  </ItemGroup>
+</Project>
