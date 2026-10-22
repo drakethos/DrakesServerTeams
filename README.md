@@ -1,7 +1,7 @@
 # DrakesServerTeams
 
 Server-wide **teams** for Valheim: two or more sides defined by the server admin (Horde / Alliance style).
-Part of DrakeMods, built on DrakeModsLibs.
+Part of DrakeMods.
 
 **Teams** are server-wide sides (this mod). **Guilds** are player-formed (Smoothbrain Guilds). **Groups** are parties (Smoothbrain Groups). This mod does not replace or patch either.
 
@@ -9,7 +9,7 @@ Part of DrakeMods, built on DrakeModsLibs.
 
 ## Setup
 
-Install on the server and on every client (it is network-checked). Requires DrakeModsLibs.
+Install on the server and on every client (it is network-checked). Needs BepInEx and Jotunn only; DrakeModsLibs is not required.
 
 On first start the server writes `BepInEx/config/DrakeMods.ServerTeams/teams.json`:
 

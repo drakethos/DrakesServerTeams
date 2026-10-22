@@ -34,7 +34,7 @@ Out of process. Teams emits events and accepts server-side commands (optional lo
 Smoothbrain Guilds API (v1.1.x) allows `CreateGuild`, `AddPlayerToGuild`, `RemovePlayerFromGuild`, join/leave events and `Get/SetCustomData`. Gaps: no closed-guild flag, `CreateGuild` needs a leader. Mirror only for free friendly-fire, colors and map markers for third-party mods; core never depends on it. Calls isolated in one class behind a soft dependency.
 
 ## Conventions followed (from DrakeModsLibs)
-- Consumer of Libs: no ServerSync reference, no ILRepack of Libs; config via `CustomizeLibsAPI.CreateConfigSync`.
+- **Libs is not a dependency (changed from the original brief).** Phase 1 used only `DrakeConfigSync`, one HUD-message call and an empty CompatHost, so config now syncs through Jotunn (`IsAdminOnly`) and messages use `MessageHud`. If Libs is needed later (LockSmith/RenameIt adapters), it comes in as a **soft dependency** isolated in one class, and no UI from Libs is needed: Teams has no UI beyond console commands.
 - One `CompatHost` per plugin GUID; soft deps never hard-required.
 - Features stay dormant until used; no always-on patches for unused features.
 - Version policy: see `Vahleim/Mod/CLAUDE.md` (local; not read yet).

@@ -1,5 +1,4 @@
 using BepInEx;
-using DrakeModsLibs.Compat;
 using HarmonyLib;
 using Jotunn;
 using Jotunn.Managers;
@@ -8,9 +7,8 @@ using Jotunn.Utils;
 namespace DrakesServerTeams;
 
 // GUID / ModName / Version come from the generated ModInfo.g.cs (ModInfoClass in mod.package.props),
-// same as CustomizeLibsPlugin in DrakeModsLibs.
+// like the other DrakeMods plugins. No DrakeModsLibs dependency in Phase 1.
 [BepInPlugin(GUID, ModName, Version)]
-[BepInDependency("com.drakemods.libs")]
 [BepInDependency(Main.ModGuid)]
 [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
@@ -24,14 +22,11 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
 
     void Awake()
     {
-        TeamsConfig.Bind(Config, GUID, ModName, Version, Logger);
+        TeamsConfig.Bind(Config);
         TeamsNet.Init(this, Logger);
         CommandManager.Instance.AddConsoleCommand(new TeamsCommand());
 
         _harmony.PatchAll(typeof(PlayerSpawnPatch));
-
-        // One compat host per plugin GUID (Libs rule). Phase 2 registers the LockSmith / RenameIt modules here.
-        CompatHosts.GetOrCreate(GUID, Logger).Initialize(_harmony);
 
         Logger.LogInfo($"{ModName} {Version} loaded.");
     }

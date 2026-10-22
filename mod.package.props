@@ -1,5 +1,5 @@
 <Project>
-  <!-- Mirrors DrakeModsLibs/mod.package.props. Consumer mod: no EmbedServerSync, no ILRepack of Libs. -->
+  <!-- No DrakeModsLibs dependency yet; a Libs adapter (LockSmith/RenameIt) would add it as a soft dependency. -->
   <PropertyGroup>
     <ThunderstoreName>DrakesServerTeams</ThunderstoreName>
     <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
@@ -15,6 +15,5 @@
   <ItemGroup>
     <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2351" />
     <ThunderstoreDependency Include="ValheimModding-Jotunn-2.30.2" />
-    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-0.11.2" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using BepInEx.Logging;
-using DrakeModsLibs.API;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
@@ -181,7 +180,7 @@ public static class TeamsNet
     {
         if (string.IsNullOrEmpty(text))
             return;
-        CustomizeLibsAPI.ShowHudMessage(Player.m_localPlayer, MessageHud.MessageType.Center, text);
+        MessageHud.instance?.ShowMessage(MessageHud.MessageType.Center, text);
         Console.instance?.Print(text);
     }
 

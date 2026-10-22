@@ -15,5 +15,4 @@
   </PropertyGroup>
   <Import Project="$(DrakeModBuildRoot)DrakeMod.Build.props" Condition="'$(DrakeModBuildRoot)' != ''" />
   <Import Project="$(MSBuildThisFileDirectory)mod.references.props" Condition="Exists('$(MSBuildThisFileDirectory)mod.references.props')" />
-  <Import Project="$(DrakeModBuildRoot)DrakeMod.Reference.WorkshopLibs.props" Condition="'$(DrakeModBuildRoot)' != '' and '$(EmbedServerSync)' != 'true'" />
 </Project>
