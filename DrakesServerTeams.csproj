@@ -108,7 +108,7 @@
     <Compile Include="Net\TeamsNet.cs" />
     <Compile Include="Patches\PlayerSpawnPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Testing\TeamsTestHooks.cs" />
+    <Compile Include="Testing\TeamsTestHooks.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="DrakesServerTeamsPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
