@@ -1,0 +1,32 @@
+{
+  "name": "DrakesServerTeams",
+  "description": "Automated regression for DrakesServerTeams: assignment and switching rules, server-signed piece teams on wards, chests and doors (stamp on build, keep on team change, backfill, forged stamps removed) and the server correcting faked published teams. Players are simulated with play-as (Alice, Bob, Carol).",
+  "requireMods": [
+    {
+      "guid": "com.drakemods.serverteams",
+      "minVersion": "0.1.0"
+    }
+  ],
+  "configOverrides": [
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "1 Assignment",
+      "key": "AssignmentMode",
+      "value": "AdminOnly"
+    },
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "1 Assignment",
+      "key": "PlayersCanSwitchTeams",
+      "value": "false"
+    }
+  ],
+  "setup": {
+    "timeOfDay": 0.5,
+    "freezeTime": 1,
+    "god": 1,
+    "noBuild": "off",
+    "hideUnlockPopups": 1
+  },
+  "resetBetweenTests": true
+}

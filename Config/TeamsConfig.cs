@@ -10,10 +10,16 @@ namespace DrakesServerTeams;
 public static class TeamsConfig
 {
     static ConfigEntry<AssignmentMode> _assignmentMode = null!;
+    static ConfigEntry<bool> _playersCanSwitch = null!;
+    static ConfigEntry<float> _stampSweepSeconds = null!;
     static ConfigEntry<int> _purgeAfterDays = null!;
     static ConfigEntry<bool> _logTeamChanges = null!;
 
     public static AssignmentMode AssignmentMode => _assignmentMode.Value;
+    /// <summary>PlayerChoice only: may a player who already has a team move to another one themself?</summary>
+    public static bool PlayersCanSwitchTeams => _playersCanSwitch.Value;
+    /// <summary>Server only. Minimum seconds between two passes that check every team-stamped piece.</summary>
+    public static float StampSweepSeconds => _stampSweepSeconds.Value;
     /// <summary>Server only. Entries not seen for this many days are deleted. 0 keeps them forever.</summary>
     public static int PurgeAfterDays => _purgeAfterDays.Value;
     /// <summary>Server only. Log team changes (team names and character name, never IDs).</summary>
@@ -26,6 +32,19 @@ public static class TeamsConfig
                 "How a character with no team gets one. AdminOnly: admin command or server API only. "
                 + "PlayerChoice: the player picks a joinable team. AutoBalance: the server picks the joinable team with the fewest members.",
                 null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+        _playersCanSwitch = config.Bind("1 Assignment", "PlayersCanSwitchTeams", false,
+            new ConfigDescription(
+                "PlayerChoice only. Off: a player picks a team once and after that only an admin (or the server API) moves them. "
+                + "On: players may switch to another joinable team themselves (a Locked team still keeps them). "
+                + "Pieces keep the team they were built under either way.",
+                null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+
+        _stampSweepSeconds = config.Bind("3 Piece teams (server)", "StampSweepSeconds", 60f,
+            new ConfigDescription(
+                "Server only. Wards, chests and doors carry the team they were built under, written and signed by the server. "
+                + "The server re-checks every one of them at most this often: it stamps pieces built before the mod and removes stamps it did not sign. "
+                + "Only runs while a mod that uses piece teams (LockSmith) is installed.",
+                new AcceptableValueRange<float>(10f, 3600f)));
 
         _purgeAfterDays = config.Bind("2 Privacy (server)", "PurgeAfterDays", 90,
             "Server only. Delete a stored player entry when that character has not joined for this many days. 0 = never.");

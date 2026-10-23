@@ -27,10 +27,21 @@ Edit it and restart the server. `Joinable`: a player may pick this team themself
 | Mode | Behavior |
 |------|----------|
 | `AdminOnly` (default) | Only an admin command or the server API assigns teams. |
-| `PlayerChoice` | A new character picks a joinable team with `teams join <team>`. Players not on a locked team may switch later. |
+| `PlayerChoice` | A new character picks a joinable team with `teams join <team>`. After that only an admin moves them, unless `PlayersCanSwitchTeams` is on (then players not on a locked team may switch). |
 | `AutoBalance` | The server puts a new character on the joinable team with the fewest members. |
 
 "New character" means a character the server has no stored entry for.
+
+## Piece teams (wards, chests, doors)
+
+When a mod that uses them is installed (LockSmith), every ward, chest and door carries the **team it was built under**. Other mods use it for "same team as the builder" access.
+
+- **The server writes it**, signed with a key only the server has (`stamp.key` in the teams folder). The server re-checks every stamped piece at most every `StampSweepSeconds` (default 60): a stamp it did not sign is replaced with the builder's team, so a modified client cannot give its team someone else's chest.
+- **Pieces keep their team** when their builder changes team.
+- **Pieces built before the mod** (or while the builder had no team) get the builder's current team on the next check.
+- The stamp holds the team id only. Deleting `stamp.key` re-stamps everything with each builder's current team.
+
+The team each player shows to other clients is also corrected by the server every few seconds.
 
 ## Console commands (F5)
 
@@ -65,8 +76,15 @@ bool same   = TeamsAPI.AreSameTeam(a, b);
 TeamsAPI.RegisterOnTeamChanged((playerId, oldTeam, newTeam) => { });
 ```
 
-The server (dedicated server or host) answers for any player. A plain client only knows its **own** team: other players read as unassigned there. See `docs/design.md` for why and what Phase 2 does about it.
+Piece teams (call `TeamsAPI.UsePieceTeams()` once at startup to turn them on):
+
+```csharp
+string? pieceTeam = TeamsAPI.GetPieceTeamId(nview);
+bool teammate     = TeamsAPI.IsOnPieceTeam(playerId, nview);
+```
+
+The server (dedicated server or host) answers for any player from its registry. A client knows its own team and the published team of players it can see (kept honest by the server). See `docs/design.md`.
 
 ## Files
 
-`BepInEx/config/DrakeMods.ServerTeams/teams.json` (definitions), `members.json` (above), and the usual `com.drakemods.serverteams.cfg` for settings.
+`BepInEx/config/DrakeMods.ServerTeams/teams.json` (definitions), `members.json` (above), `stamp.key` (server secret for piece teams, no personal data), and the usual `com.drakemods.serverteams.cfg` for settings.

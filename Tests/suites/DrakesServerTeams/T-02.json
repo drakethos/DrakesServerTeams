@@ -1,0 +1,91 @@
+{
+  "name": "T-02 players pick once; switching is admin-only unless allowed",
+  "description": "",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "PlayerChoice",
+        "1 Assignment/PlayersCanSwitchTeams": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "teams.forget"
+    },
+    {
+      "do": "hook",
+      "name": "teams.selfJoin",
+      "args": {
+        "team": "red"
+      },
+      "expect": "ok",
+      "label": "Bob (no team) picks red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.selfJoin",
+      "args": {
+        "team": "blue"
+      },
+      "contains": "Only an admin",
+      "label": "Bob cannot switch to blue himself"
+    },
+    {
+      "do": "hook",
+      "name": "teams.myTeam",
+      "expect": "red",
+      "label": "Bob is still red"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/PlayersCanSwitchTeams": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.selfJoin",
+      "args": {
+        "team": "blue"
+      },
+      "expect": "ok",
+      "label": "with PlayersCanSwitchTeams on, Bob switches to blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.myTeam",
+      "expect": "blue"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.selfJoin",
+      "args": {
+        "team": "red"
+      },
+      "contains": "cannot pick",
+      "label": "AdminOnly: players cannot pick at all"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    }
+  ]
+}

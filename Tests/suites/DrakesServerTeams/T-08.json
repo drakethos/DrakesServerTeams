@@ -1,0 +1,44 @@
+{
+  "name": "T-08 a faked published team does not last",
+  "description": "",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice is on red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.fakePublishedTeam",
+      "args": {
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "a modified client publishes blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.guardNow",
+      "expect": "red",
+      "label": "the server puts red back"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    }
+  ]
+}

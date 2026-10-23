@@ -24,6 +24,7 @@ public static class TeamsNet
         Hello = 1,
         Choose = 2,
         Admin = 3,
+        Stamp = 4,
         State = 10,
         Message = 11,
     }
@@ -71,6 +72,31 @@ public static class TeamsNet
     public static void RequestChoose(string teamId) => SendToServer(Op.Choose, p => p.Write(teamId));
 
     public static void RequestAdmin(string commandLine) => SendToServer(Op.Admin, p => p.Write(commandLine));
+
+    /// <summary>The local player built a ward, chest or door: the server stamps it with our team.</summary>
+    public static void RequestStamp(ZDOID id)
+    {
+        if (IsAuthority)
+        {
+            if (Player.m_localPlayer != null)
+                PieceTeams.OnStampRequest(id, Player.m_localPlayer.GetPlayerID());
+            return;
+        }
+        SendToServer(Op.Stamp, p => p.Write(id));
+    }
+
+    /// <summary>
+    /// The local character changed under us (another character loaded, or a test tool swapped the player id):
+    /// what we know about our own team no longer applies, so ask again.
+    /// </summary>
+    public static void CheckLocalIdentity()
+    {
+        var player = Player.m_localPlayer;
+        if (player == null || _hello != null || !TeamsClientState.Ready)
+            return;
+        if (player.GetPlayerID() != TeamsClientState.PlayerId)
+            OnLocalPlayerSpawned();
+    }
 
     static void SendToServer(Op op, Action<ZPackage>? fill = null)
     {
@@ -142,7 +168,7 @@ public static class TeamsNet
 
         var hadTeam = TeamsClientState.OwnTeamId != null;
         var firstState = !TeamsClientState.Ready;
-        TeamsClientState.Apply(own, mode, canSwitch, teams);
+        TeamsClientState.Apply(Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L, own, mode, canSwitch, teams);
         PublishOwnTeam();
         if (firstState && !hadTeam && TeamsClientState.OwnTeamId == null && mode == AssignmentMode.PlayerChoice)
             Say("Pick a team: open the console (F5) and type  teams join <team>.  Teams: " + JoinIds(TeamsClientState.Teams, joinableOnly: true));
@@ -250,6 +276,10 @@ public static class TeamsNet
                 // OnServerTeamChanged pushes the new state on success.
                 break;
 
+            case Op.Stamp:
+                PieceTeams.OnStampRequest(pkg.ReadZDOID(), characterId);
+                break;
+
             case Op.Admin:
                 if (!PeerIdentity.IsAdmin(sender))
                 {
@@ -258,6 +288,34 @@ public static class TeamsNet
                 }
                 SendMessage(sender, TeamsAdmin.Run(pkg.ReadString(), name));
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Server: make every connected player's published team match the registry. The owning client writes it, so a
+    /// modified client could claim another team; this puts the truth back within a few seconds.
+    /// </summary>
+    public static void GuardPublishedTeams()
+    {
+        if (!IsAuthority || ZDOMan.instance == null)
+            return;
+        var registry = TeamRegistry.Instance;
+        var local = Player.m_localPlayer;
+        if (local != null)
+            Correct(local.GetComponent<ZNetView>()?.GetZDO(), registry.GetTeamId(local.GetPlayerID()));
+        foreach (var peer in ZNet.instance.GetPeers())
+        {
+            if (PeerIdentity.TryResolve(peer.m_uid, out var characterId, out _))
+                Correct(ZDOMan.instance.GetZDO(peer.m_characterID), registry.GetTeamId(characterId));
+        }
+
+        static void Correct(ZDO? zdo, string? team)
+        {
+            if (zdo == null)
+                return;
+            var want = team ?? "";
+            if (zdo.GetString(TeamsAPI.TeamZdoKey, "") != want)
+                zdo.Set(TeamsAPI.TeamZdoKey, want);
         }
     }
 
@@ -281,7 +339,7 @@ public static class TeamsNet
         var registry = TeamRegistry.Instance;
         var own = registry.GetTeamId(characterId);
         var canSwitch = TeamsConfig.AssignmentMode == AssignmentMode.PlayerChoice
-                        && !(own != null && registry.GetTeam(own)?.Locked == true);
+                        && (own == null || (TeamsConfig.PlayersCanSwitchTeams && registry.GetTeam(own)?.Locked != true));
 
         var pkg = new ZPackage();
         pkg.Write((int)Op.State);

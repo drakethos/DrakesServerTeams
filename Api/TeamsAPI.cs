@@ -23,17 +23,28 @@ public static class TeamsAPI
     /// <summary>True on the dedicated server or the host, where team data lives.</summary>
     public static bool IsAuthority => TeamsNet.IsAuthority;
 
-    /// <summary>Team id of the player, or null when unassigned (or unknown on this client).</summary>
+    /// <summary>
+    /// Team id of the player, or null when unassigned (or unknown on this client). A client knows its own team and
+    /// the published team of players it can see (kept honest by the server, see <see cref="GetTeamId(Player)"/>).
+    /// </summary>
     public static string? GetTeamId(long playerId)
     {
         if (IsAuthority)
             return TeamRegistry.Instance.GetTeamId(playerId);
-        return IsLocalPlayerId(playerId) ? TeamsClientState.OwnTeamId : null;
+        if (playerId == 0)
+            return null;
+        if (IsLocalPlayerId(playerId))
+            return TeamsClientState.PlayerId == playerId ? TeamsClientState.OwnTeamId : null;
+        foreach (var p in Player.GetAllPlayers())
+            if (p != null && p.GetPlayerID() == playerId)
+                return GetTeamId(p);
+        return null;
     }
 
     /// <summary>
     /// Team of a player object. The authority answers from its registry. A client reads the team the
-    /// player published on its ZDO (so it works for any visible player), which is a display hint, not proof.
+    /// player published on its ZDO (so it works for any visible player). The owning client writes that value and the
+    /// server overwrites it with the registry's answer every few seconds, so a faked team does not last.
     /// </summary>
     public static string? GetTeamId(Player? player)
     {
@@ -42,7 +53,7 @@ public static class TeamsAPI
         if (IsAuthority)
             return GetTeamId(player.GetPlayerID());
         if (player == Player.m_localPlayer)
-            return TeamsClientState.OwnTeamId;
+            return TeamsClientState.PlayerId == player.GetPlayerID() ? TeamsClientState.OwnTeamId : null;
         var id = player.GetComponent<ZNetView>()?.GetZDO()?.GetString(TeamZdoKey, "");
         return string.IsNullOrEmpty(id) ? null : id;
     }
@@ -76,6 +87,36 @@ public static class TeamsAPI
     /// <summary>Deletes the stored entry for a character (GDPR erase). Authority only.</summary>
     public static bool Forget(long playerId) =>
         IsAuthority && TeamRegistry.Instance.Forget(playerId, by: "API");
+
+    // ---- piece teams (wards, chests, doors) ------------------------------------------------------------
+
+    /// <summary>ZDO key (string) holding a piece's team stamp. Read it through <see cref="GetPieceTeamId(ZNetView)"/>.</summary>
+    public static readonly int PieceTeamZdoKey = PieceTeams.StampKey;
+
+    /// <summary>
+    /// Call once at startup (from a soft-dependency class) to turn on piece teams: wards, chests and doors are stamped
+    /// by the server with the team they were built under. Off until some mod asks for it.
+    /// </summary>
+    public static void UsePieceTeams() => DrakesServerTeamsPlugin.EnablePieceTeams();
+
+    public static bool PieceTeamsActive => PieceTeams.Active;
+
+    /// <summary>The team a piece was built under, or null (no team, or not stamped yet).</summary>
+    public static string? GetPieceTeamId(ZNetView? view) =>
+        view != null && view.IsValid() ? PieceTeams.ReadTeam(view.GetZDO()) : null;
+
+    /// <summary>True when the player is on the team the piece was built under.</summary>
+    public static bool IsOnPieceTeam(long playerId, ZNetView? view)
+    {
+        var pieceTeam = GetPieceTeamId(view);
+        return pieceTeam != null && string.Equals(pieceTeam, GetTeamId(playerId), StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool IsOnPieceTeam(Player? player, ZNetView? view)
+    {
+        var pieceTeam = GetPieceTeamId(view);
+        return pieceTeam != null && string.Equals(pieceTeam, GetTeamId(player), StringComparison.OrdinalIgnoreCase);
+    }
 
     public delegate void TeamChanged(long playerId, string? oldTeamId, string? newTeamId);
 

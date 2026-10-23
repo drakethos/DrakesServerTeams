@@ -97,6 +97,7 @@
     <Compile Include="Commands\TeamsCommand.cs" />
     <Compile Include="Config\TeamsConfig.cs" />
     <Compile Include="Core\AssignmentMode.cs" />
+    <Compile Include="Core\PieceTeams.cs" />
     <Compile Include="Core\TeamDefinition.cs" />
     <Compile Include="Core\TeamFiles.cs" />
     <Compile Include="Core\TeamRegistry.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Net\TeamsNet.cs" />
     <Compile Include="Patches\PlayerSpawnPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Testing\TeamsTestHooks.cs" />
     <Compile Include="DrakesServerTeamsPlugin.cs" />
   </ItemGroup>
   <ItemGroup>

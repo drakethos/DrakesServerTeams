@@ -132,6 +132,11 @@ public sealed class TeamRegistry
             reason = $"You are already on {target.DisplayName}.";
             return false;
         }
+        if (currentId != null && !TeamsConfig.PlayersCanSwitchTeams)
+        {
+            reason = "Only an admin can move you to another team.";
+            return false;
+        }
         if (currentId != null && _teams.TryGetValue(currentId, out var current) && current.Locked)
         {
             reason = $"{current.DisplayName} is locked. Ask an admin to move you.";

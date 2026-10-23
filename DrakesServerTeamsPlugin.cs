@@ -15,14 +15,23 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
 {
     const float FlushIntervalSeconds = 30f;
     const float PurgeIntervalSeconds = 6 * 3600f;
+    const float GuardIntervalSeconds = 5f;
+    const float IdentityIntervalSeconds = 1f;
 
-    readonly Harmony _harmony = new("drakemods.DrakesServerTeams");
+    static readonly Harmony _harmony = new("drakemods.DrakesServerTeams");
+    internal static DrakesServerTeamsPlugin? Instance { get; private set; }
     float _nextFlush;
     float _nextPurge;
+    float _nextGuard;
+    float _nextIdentity;
+
+    internal static void EnablePieceTeams() => PieceTeams.Activate(_harmony);
 
     void Awake()
     {
+        Instance = this;
         TeamsConfig.Bind(Config);
+        PieceTeams.Init(Logger);
         TeamsNet.Init(this, Logger);
         CommandManager.Instance.AddConsoleCommand(new TeamsCommand());
 
@@ -31,13 +40,24 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
         Logger.LogInfo($"{ModName} {Version} loaded.");
     }
 
-    // Server housekeeping only: nothing runs on a plain client.
+    // A plain client only checks that its own character has not changed; the rest is server housekeeping.
     void Update()
     {
+        var now = UnityEngine.Time.unscaledTime;
+        if (now >= _nextIdentity)
+        {
+            _nextIdentity = now + IdentityIntervalSeconds;
+            TeamsNet.CheckLocalIdentity();
+        }
         if (!TeamsNet.IsAuthority)
             return;
         TeamRegistry.Instance.EnsureLoaded();
-        var now = UnityEngine.Time.unscaledTime;
+        PieceTeams.Tick(this);
+        if (now >= _nextGuard)
+        {
+            _nextGuard = now + GuardIntervalSeconds;
+            TeamsNet.GuardPublishedTeams();
+        }
         if (now >= _nextFlush)
         {
             _nextFlush = now + FlushIntervalSeconds;

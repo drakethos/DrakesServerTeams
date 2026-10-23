@@ -1,0 +1,66 @@
+{
+  "name": "T-01 admin assignment and the published team",
+  "description": "",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice is on red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.myTeam",
+      "expect": "red",
+      "label": "Alice reads her own team"
+    },
+    {
+      "do": "hook",
+      "name": "teams.guardNow",
+      "expect": "red",
+      "label": "the server publishes red on her player"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Alice is on blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.myTeam",
+      "expect": "blue",
+      "label": "an admin move takes effect"
+    },
+    {
+      "do": "hook",
+      "name": "teams.forget",
+      "expect": "",
+      "label": "forget leaves her without a team"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    }
+  ]
+}

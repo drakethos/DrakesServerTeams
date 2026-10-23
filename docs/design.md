@@ -37,7 +37,7 @@ Smoothbrain Guilds API (v1.1.x) allows `CreateGuild`, `AddPlayerToGuild`, `Remov
 - **Libs is not a dependency (changed from the original brief).** Phase 1 used only `DrakeConfigSync`, one HUD-message call and an empty CompatHost, so config now syncs through Jotunn (`IsAdminOnly`) and messages use `MessageHud`. If Libs is needed later (LockSmith/RenameIt adapters), it comes in as a **soft dependency** isolated in one class, and no UI from Libs is needed: Teams has no UI beyond console commands.
 - One `CompatHost` per plugin GUID; soft deps never hard-required.
 - Features stay dormant until used; no always-on patches for unused features.
-- Version policy: see `Vahleim/Mod/CLAUDE.md` (local; not read yet).
+- Version policy: `Vahleim/Mod/CLAUDE.md`: never change a version number unless the owner asks.
 
 ## Open questions
 - LockSmith hook point: handover doc names `IWardCompatModule` and `LockSmithCompatApi`; LockSmith source needed.
@@ -67,6 +67,14 @@ Decisions made while building it (change them here if wrong):
 - **Proposed fix: stamp the creator's team on the piece.** When a player places a ward/chest/door, their client writes `creatorTeam` (team id) on the piece ZDO next to the creator ID. The check becomes "my team == piece.creatorTeam", needs no IDs, works on any peer, and reads the same value on hover. Trade-offs: pieces keep the team they were placed under (moving teams does not transfer them; wards/chests of a player who changes teams should probably stop matching, so compare against the stamp, not the creator's current team); a modified client could stamp a fake team on its own pieces, which only affects its own pieces.
 - Proposed LockSmith change (separate LockSmith release): add a "Team" access option on chests/doors/wards that is true when `TeamsAPI.GetTeamId(player) == piece.creatorTeam`, provided by a soft-dependency class (LockSmith never hard-requires Teams). Teams ships the stamping patch only while LockSmith or RenameIt is present (dormant otherwise).
 - RenameIt: not read yet. Same question for "whoever can build/remove".
+
+## Phase 2 decisions (owner, 2026-10-22)
+- **Approved: piece team stamp, with server validation.** Only the server writes it; it is `team|HMAC(server key, creator, team)`. ZDO ids are renumbered on every world load (`ZDO.Load` → `m_uid.SetID(++m_loadID)`), so they are not signed. Clients only read the team part.
+- **Backfill (owner: "whatever makes most sense"):** an unstamped piece gets its builder's current team on the next sweep. A piece whose builder has no team stays unstamped until they get one.
+- **Pieces keep their team** when the builder changes team (the signature still verifies). Team changes are expected to be rare: `PlayersCanSwitchTeams` (default off) makes switching admin-only after the first pick.
+- **Ward permitted list accepts "my team"** (LockSmith side).
+- The server also corrects every player's published team (`TeamZdoKey`) every 5 s, so the requester's team that a chest's owner peer reads is trustworthy within a few seconds.
+- Limit (same as vanilla): access checks run on the client, so a modified client can still ignore locks entirely. Validation keeps honest clients from being fed fake teams.
 
 ## Open for Phase 2
 - Approve the creator-team stamp above (or choose another way to answer "same team as owner" without IDs).

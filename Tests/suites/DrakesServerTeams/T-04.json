@@ -1,0 +1,75 @@
+{
+  "name": "T-04 pieces keep the team they were built under",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.usePieceTeams",
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice is on red"
+    },
+    {
+      "do": "place",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "as": "chest"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Alice is on blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.checkPiece",
+      "args": {
+        "target": "chest"
+      },
+      "expect": "red",
+      "label": "after Alice moves to blue, the server keeps the chest red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.isOnPieceTeam",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "so blue Alice is no longer on her old chest's team"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    }
+  ]
+}

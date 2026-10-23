@@ -9,6 +9,8 @@ namespace DrakesServerTeams;
 public static class TeamsClientState
 {
     public static bool Ready { get; private set; }
+    /// <summary>The local character the state belongs to (our own id; never another player's).</summary>
+    public static long PlayerId { get; private set; }
     public static string? OwnTeamId { get; private set; }
     public static AssignmentMode Mode { get; private set; }
     /// <summary>True when this player may pick or switch teams right now.</summary>
@@ -32,15 +34,17 @@ public static class TeamsClientState
     public static void Reset()
     {
         Ready = false;
+        PlayerId = 0;
         OwnTeamId = null;
         CanSwitch = false;
         _teams.Clear();
     }
 
-    public static void Apply(string? ownTeamId, AssignmentMode mode, bool canSwitch, List<TeamDefinition> teams)
+    public static void Apply(long playerId, string? ownTeamId, AssignmentMode mode, bool canSwitch, List<TeamDefinition> teams)
     {
         var old = OwnTeamId;
         Ready = true;
+        PlayerId = playerId;
         OwnTeamId = string.IsNullOrEmpty(ownTeamId) ? null : ownTeamId;
         Mode = mode;
         CanSwitch = canSwitch;
