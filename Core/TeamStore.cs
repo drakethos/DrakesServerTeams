@@ -1,12 +1,15 @@
 using System;
 using System.IO;
+using System.Text;
 using BepInEx;
 using BepInEx.Logging;
-using UnityEngine;
 
 namespace DrakesServerTeams;
 
-/// <summary>Reads and writes the two flat JSON files next to the BepInEx config. Server only.</summary>
+/// <summary>
+/// Reads and writes the two flat JSON files next to the BepInEx config. Server only.
+/// Uses Jotunn's SimpleJson: Unity's JsonUtility writes "{}" for types in a plugin assembly loaded at runtime.
+/// </summary>
 public static class TeamStore
 {
     public static string Folder => Path.Combine(Paths.ConfigPath, "DrakeMods.ServerTeams");
@@ -16,10 +19,10 @@ public static class TeamStore
     public static TeamsFile LoadTeams(ManualLogSource log)
     {
         var file = Read<TeamsFile>(TeamsPath, log);
-        if (file != null)
+        if (file != null && !IsEmptyLeftover(TeamsPath))
             return file;
         // Present but unreadable: never overwrite an admin's edit with the starter file.
-        if (File.Exists(TeamsPath))
+        if (file == null && File.Exists(TeamsPath))
             return new TeamsFile();
 
         // First run: write a starter file the admin edits. Two plain sides, nothing locked.
@@ -42,7 +45,7 @@ public static class TeamStore
         {
             if (!File.Exists(path))
                 return null;
-            return JsonUtility.FromJson<T>(File.ReadAllText(path));
+            return SimpleJson.SimpleJson.DeserializeObject<T>(File.ReadAllText(path));
         }
         catch (Exception ex)
         {
@@ -59,7 +62,7 @@ public static class TeamStore
         {
             Directory.CreateDirectory(Folder);
             var tmp = path + ".tmp";
-            File.WriteAllText(tmp, JsonUtility.ToJson(data, true));
+            File.WriteAllText(tmp, Indent(SimpleJson.SimpleJson.SerializeObject(data!)));
             if (File.Exists(path))
                 File.Delete(path);
             File.Move(tmp, path);
@@ -68,5 +71,73 @@ public static class TeamStore
         {
             log.LogError($"Could not write {Path.GetFileName(path)}: {ex.Message}");
         }
+    }
+
+    /// <summary>A teams.json of just "{}": written by 0.1.0 builds whose serializer failed. Safe to replace with the starter file.</summary>
+    static bool IsEmptyLeftover(string path)
+    {
+        try
+        {
+            return File.Exists(path) && File.ReadAllText(path).Trim() == "{}";
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Pretty-prints compact JSON (two spaces) so admins can edit the files by hand.</summary>
+    static string Indent(string json)
+    {
+        var sb = new StringBuilder(json.Length * 2);
+        var depth = 0;
+        var inString = false;
+        for (var i = 0; i < json.Length; i++)
+        {
+            var c = json[i];
+            if (inString)
+            {
+                sb.Append(c);
+                if (c == '\\' && i + 1 < json.Length)
+                    sb.Append(json[++i]);
+                else if (c == '"')
+                    inString = false;
+                continue;
+            }
+
+            switch (c)
+            {
+                case '"':
+                    inString = true;
+                    sb.Append(c);
+                    break;
+                case '{':
+                case '[':
+                    sb.Append(c);
+                    if (i + 1 < json.Length && (json[i + 1] == '}' || json[i + 1] == ']'))
+                    {
+                        sb.Append(json[++i]);
+                        break;
+                    }
+                    sb.AppendLine().Append(' ', ++depth * 2);
+                    break;
+                case '}':
+                case ']':
+                    sb.AppendLine().Append(' ', --depth * 2).Append(c);
+                    break;
+                case ',':
+                    sb.Append(c).AppendLine().Append(' ', depth * 2);
+                    break;
+                case ':':
+                    sb.Append(": ");
+                    break;
+                default:
+                    if (!char.IsWhiteSpace(c))
+                        sb.Append(c);
+                    break;
+            }
+        }
+
+        return sb.AppendLine().ToString();
     }
 }

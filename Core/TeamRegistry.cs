@@ -93,6 +93,8 @@ public sealed class TeamRegistry
         }
 
         _log.LogInfo($"Loaded {_order.Count} team(s) and {_members.Count} stored player(s).");
+        if (_order.Count == 0)
+            _log.LogWarning($"No teams defined. Add teams to {TeamStore.TeamsPath} and restart the server.");
         Purge();
     }
 

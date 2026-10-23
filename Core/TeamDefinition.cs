@@ -3,7 +3,7 @@ using System;
 namespace DrakesServerTeams;
 
 /// <summary>One side. Loaded from the server's teams file. Contains no personal data.</summary>
-/// <remarks>Public fields on purpose: the teams file is read and written with Unity's JsonUtility.</remarks>
+/// <remarks>Public fields on purpose: the teams file is read and written by field (Jotunn SimpleJson).</remarks>
 [Serializable]
 public sealed class TeamDefinition
 {
