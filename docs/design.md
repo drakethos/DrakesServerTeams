@@ -68,6 +68,11 @@ Decisions made while building it (change them here if wrong):
 - Proposed LockSmith change (separate LockSmith release): add a "Team" access option on chests/doors/wards that is true when `TeamsAPI.GetTeamId(player) == piece.creatorTeam`, provided by a soft-dependency class (LockSmith never hard-requires Teams). Teams ships the stamping patch only while LockSmith or RenameIt is present (dormant otherwise).
 - RenameIt: not read yet. Same question for "whoever can build/remove".
 
+## Phase 2 status
+- **Teams side (done):** `PieceStampPatch` writes the builder's team id on a placed piece (`TeamsAPI.CreatorTeamZdoKey`, read with `GetCreatorTeamId` / `IsSameTeamAsCreator`). Patched only when LockSmith or RenameIt is installed.
+- **LockSmith side (done, branch `claude/blissful-goldberg-dpxbsf`, not run in game):** visible "Team" renamed to Shared/Member (text only); new per-piece **Team** switch on managed chests and doors (`Access/TeamAccess.cs`, `Compat/ServerTeams/ServerTeamsBridge.cs`, reflection, no reference to the Teams DLL).
+- **Not done:** wards (a ward's own permitted list does not accept a team), private-family "Shared" chests, hover text for Team access, RenameIt.
+
 ## Open for Phase 2
 - Approve the creator-team stamp above (or choose another way to answer "same team as owner" without IDs).
 - Whether a ward's permitted list should also accept "my team" (vanilla wards have no creator-team concept beyond the creator and the permitted list).
