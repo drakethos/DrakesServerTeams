@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using BepInEx.Logging;
 using Jotunn.Entities;
@@ -77,7 +79,7 @@ public static class TeamsNet
         var pkg = new ZPackage();
         pkg.Write((int)op);
         fill?.Invoke(pkg);
-        _rpc.SendPackage(ZRoutedRpc.instance.GetServerPeerID(), pkg);
+        _rpc.SendPackage(PeerIdentity.ServerPeerId(), pkg);
     }
 
     // ---- receive (both sides) -------------------------------------------------------------------------
@@ -180,8 +182,38 @@ public static class TeamsNet
     {
         if (string.IsNullOrEmpty(text))
             return;
-        MessageHud.instance?.ShowMessage(MessageHud.MessageType.Center, text);
+        ShowCenter(text);
         Console.instance?.Print(text);
+    }
+
+    // MessageHud.ShowMessage gained a parameter in Valheim 1.0 and the stubs only know the old one, so find
+    // the (MessageType, string, ...) overload at runtime and pass defaults for the rest.
+    static MethodInfo? _showMessage;
+
+    static void ShowCenter(string text)
+    {
+        var hud = MessageHud.instance;
+        if (hud == null)
+            return;
+        _showMessage ??= typeof(MessageHud).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Where(m => m.Name == "ShowMessage")
+            .Select(m => (m, ps: m.GetParameters()))
+            .Where(x => x.ps.Length >= 2 && x.ps[0].ParameterType == typeof(MessageHud.MessageType) && x.ps[1].ParameterType == typeof(string))
+            .OrderByDescending(x => x.ps.Length)
+            .Select(x => x.m)
+            .FirstOrDefault();
+        if (_showMessage == null)
+            return;
+        var ps = _showMessage.GetParameters();
+        var args = new object?[ps.Length];
+        args[0] = MessageHud.MessageType.Center;
+        args[1] = text;
+        for (var i = 2; i < ps.Length; i++)
+        {
+            var t = ps[i].ParameterType;
+            args[i] = ps[i].HasDefaultValue ? ps[i].DefaultValue : t.IsValueType ? Activator.CreateInstance(t) : null;
+        }
+        _showMessage.Invoke(hud, args);
     }
 
     // ---- server side ----------------------------------------------------------------------------------

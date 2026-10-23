@@ -15,8 +15,19 @@ public static class PeerIdentity
     static readonly MethodInfo? ListContainsIdMethod = AccessTools.Method(typeof(ZNet), "ListContainsId");
     static readonly int PlayerIdHash = "playerID".GetStableHashCode();
 
+    /// <summary>
+    /// The server's peer uid: our own session id on the server, the server peer's uid on a client.
+    /// Same as ZRoutedRpc.GetServerPeerID, which is private in the real game.
+    /// </summary>
+    public static long ServerPeerId()
+    {
+        if (ZNet.instance == null)
+            return 0;
+        return ZNet.instance.IsServer() ? ZNet.GetUID() : ZNet.instance.GetServerPeer()?.m_uid ?? 0;
+    }
+
     public static bool IsHostLocal(long sender) =>
-        ZRoutedRpc.instance != null && sender == ZRoutedRpc.instance.GetServerPeerID();
+        ZNet.instance != null && sender == ServerPeerId();
 
     /// <summary>False while the sender's character has not spawned yet.</summary>
     public static bool TryResolve(long sender, out long characterId, out string name)
@@ -74,7 +85,7 @@ public static class PeerIdentity
         if (ZNet.instance == null)
             return null;
         if (Player.m_localPlayer != null && !ZNet.instance.IsDedicated() && Player.m_localPlayer.GetPlayerID() == characterId)
-            return ZRoutedRpc.instance?.GetServerPeerID();
+            return ServerPeerId();
         foreach (var peer in ZNet.instance.GetPeers())
         {
             if (TryResolve(peer.m_uid, out var id, out _) && id == characterId)

@@ -62,7 +62,7 @@ public static class TeamsAdmin
     {
         if (ZNet.instance == null)
             yield break;
-        if (!ZNet.instance.IsDedicated() && PeerIdentity.TryResolve(ZRoutedRpc.instance.GetServerPeerID(), out var hostId, out var hostName))
+        if (!ZNet.instance.IsDedicated() && PeerIdentity.TryResolve(PeerIdentity.ServerPeerId(), out var hostId, out var hostName))
             yield return (hostId, hostName);
         foreach (var peer in ZNet.instance.GetPeers())
             if (PeerIdentity.TryResolve(peer.m_uid, out var id, out var name))
