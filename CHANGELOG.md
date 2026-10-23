@@ -10,4 +10,5 @@
 - `TeamsAPI`: `GetTeamId`, `GetTeam`, `GetTeams`, `AreSameTeam`, `TryAssign`, `Forget`, `RegisterOnTeamChanged` (authority), `RegisterOnOwnTeamChanged` (client).
 - No DrakeModsLibs dependency. `AssignmentMode` syncs through Jotunn (admin-only entry).
 - The player's team is published on their ZDO (display hint); `TeamsAPI.GetTeamId(Player)` / `AreSameTeam(Player, Player)` work on clients for any visible player.
+- Piece team stamp: when LockSmith or RenameIt is installed, a placed piece gets the builder's team id (`TeamsAPI.GetCreatorTeamId`, `IsSameTeamAsCreator`). Dormant otherwise.
 - Not yet: compat with LockSmith / RenameIt, name hiding, PvP rules, team wards, spawn points, banners, creature factions.

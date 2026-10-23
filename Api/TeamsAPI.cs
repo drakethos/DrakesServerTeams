@@ -31,6 +31,29 @@ public static class TeamsAPI
         return IsLocalPlayerId(playerId) ? TeamsClientState.OwnTeamId : null;
     }
 
+    /// <summary>ZDO key (string team id) stamped on a piece when it is placed. Read it through <see cref="GetCreatorTeamId"/>.</summary>
+    public static readonly int CreatorTeamZdoKey = "DrakesServerTeams_creatorTeam".GetStableHashCode();
+
+    /// <summary>The team the piece's builder was on when they placed it, or null (none, or built before Teams).</summary>
+    public static string? GetCreatorTeamId(ZNetView? nview)
+    {
+        if (nview == null || !nview.IsValid())
+            return null;
+        var id = nview.GetZDO().GetString(CreatorTeamZdoKey, "");
+        return string.IsNullOrEmpty(id) ? null : id;
+    }
+
+    /// <summary>
+    /// True when <paramref name="player"/> is on the team the piece was built under. Needs no character IDs and
+    /// works on any client. Display/hint grade: a modified client can fake its team or a stamp on its own pieces.
+    /// </summary>
+    public static bool IsSameTeamAsCreator(Player? player, ZNetView? piece)
+    {
+        var stamp = GetCreatorTeamId(piece);
+        var mine = GetTeamId(player);
+        return stamp != null && mine != null && string.Equals(stamp, mine, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>
     /// Team of a player object. The authority answers from its registry. A client reads the team the
     /// player published on its ZDO (so it works for any visible player), which is a display hint, not proof.

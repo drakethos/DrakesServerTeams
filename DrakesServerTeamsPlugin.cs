@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Bootstrap;
 using HarmonyLib;
 using Jotunn;
 using Jotunn.Managers;
@@ -10,9 +11,14 @@ namespace DrakesServerTeams;
 // like the other DrakeMods plugins. No DrakeModsLibs dependency in Phase 1.
 [BepInPlugin(GUID, ModName, Version)]
 [BepInDependency(Main.ModGuid)]
+// Soft: only for load order, so the check in Awake can see whether these are installed.
+[BepInDependency(LockSmithGuid, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(RenameItGuid, BepInDependency.DependencyFlags.SoftDependency)]
 [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
 {
+    const string LockSmithGuid = "com.drakesworkshop.locksmith";
+    const string RenameItGuid = "com.drakesworkshop.renameit";
     const float FlushIntervalSeconds = 30f;
     const float PurgeIntervalSeconds = 6 * 3600f;
 
@@ -27,6 +33,13 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
         CommandManager.Instance.AddConsoleCommand(new TeamsCommand());
 
         _harmony.PatchAll(typeof(PlayerSpawnPatch));
+
+        // Dormant until used: the piece stamp exists for LockSmith / RenameIt, so only patch when one is installed.
+        if (Chainloader.PluginInfos.ContainsKey(LockSmithGuid) || Chainloader.PluginInfos.ContainsKey(RenameItGuid))
+        {
+            _harmony.PatchAll(typeof(PieceStampPatch));
+            Logger.LogInfo("A mod that uses team permissions is installed: piece team stamp on.");
+        }
 
         Logger.LogInfo($"{ModName} {Version} loaded.");
     }
