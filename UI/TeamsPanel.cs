@@ -277,7 +277,16 @@ internal static class TeamsLabTools
         var pos = me.transform.position + me.transform.forward * 4f;
         pos.y = ZoneSystem.instance != null ? ZoneSystem.instance.GetGroundHeight(pos) : pos.y;
         var go = UnityEngine.Object.Instantiate(prefab, pos, Quaternion.identity);
-        go.GetComponent<Piece>()?.SetCreator(me.GetPlayerID());
+        // Piece.SetCreator changed signature in the current game (it also takes a platform user id), so write the creator the way it stores it
+        // and ask the server for the team stamp ourselves.
+        var view = go.GetComponent<ZNetView>();
+        if (view != null && view.IsValid())
+        {
+            var zdo = view.GetZDO();
+            zdo.Set("creator".GetStableHashCode(), me.GetPlayerID());
+            zdo.Set("creatorName".GetStableHashCode(), me.GetPlayerName());
+            TeamsNet.RequestStamp(zdo.m_uid);
+        }
         TeamsNet.Say("Team Ward placed in front of you.");
     }
 }

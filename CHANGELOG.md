@@ -1,5 +1,8 @@
 # DrakesServerTeams
 
+## 0.1.0-beta.2
+- **Fix:** the build referenced `Piece.SetCreator(long)`, which the current game version no longer has (Hexium flagged beta.1 as broken on it). The only use was the test-bench "Place a Team Ward in front of me" button; it no longer calls it. New mod icon.
+
 ## 0.1.0-beta.1
 **First public beta: early preview, not thoroughly tested. Back up your world and characters before using it.**
 - **First-join team picker** (`AssignmentMode` = PlayerChoice, setting `FirstJoinPicker`, default on): a character with no team gets a window listing the joinable teams the first time it loads in. The server writes a flag (`offered` in `members.json`) so it only appears once. `teams pick` reopens it; admins can show it again with `teams offer <player|all>`.

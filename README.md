@@ -6,7 +6,7 @@ Part of DrakeMods.
 **Teams** are server-wide sides (this mod). **Guilds** are player-formed (Smoothbrain Guilds). **Groups** are parties (Smoothbrain Groups). This mod does not replace or patch either.
 
 > [!WARNING]
-> ### ⚠️ 0.1.0-beta.1: brand new, early preview, not thoroughly tested
+> ### ⚠️ 0.1.0 beta: brand new, early preview, not thoroughly tested
 > This is the **first public build** of DrakesServerTeams. It has only been tested in a single test world with one real player and simulated players, never on a busy server. Expect bugs, rough edges and changes between betas.
 >
 > **Use it at your own risk.**
