@@ -10,6 +10,7 @@ namespace DrakesServerTeams;
 // like the other DrakeMods plugins. No DrakeModsLibs dependency in Phase 1.
 [BepInPlugin(GUID, ModName, Version)]
 [BepInDependency(Main.ModGuid)]
+[BepInDependency("com.drakemods.testlab", BepInDependency.DependencyFlags.SoftDependency)]
 [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
 {
@@ -32,10 +33,26 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
         Instance = this;
         TeamsConfig.Bind(Config);
         PieceTeams.Init(Logger);
+        TeamWard.Register();
         TeamsNet.Init(this, Logger);
         CommandManager.Instance.AddConsoleCommand(new TeamsCommand());
 
         _harmony.PatchAll(typeof(PlayerSpawnPatch));
+        _harmony.PatchAll(typeof(TeamSpawnPatch));
+        foreach (var t in new[] { typeof(PlayerGlowPatch), typeof(NameplatePatch), typeof(GraveSetupPatch), typeof(GraveAwakePatch), typeof(GraveHoverPatch), typeof(CreateTombStonePatch), typeof(MoveToGravePatch),
+            typeof(WardEnabledPatch), typeof(WardPermittedPatch), typeof(WardLocalAccessPatch), typeof(WardInteractPatch), typeof(WardHoverPatch),
+            typeof(WardBuildContextPatch), typeof(WardDoorContextPatch), typeof(WardChestContextPatch), typeof(WardPlacePatch) })
+            _harmony.PatchAll(t);
+
+        gameObject.AddComponent<AdminPanel>();
+        gameObject.AddComponent<WardPanel>();
+        gameObject.AddComponent<TeamPicker>();
+        _harmony.PatchAll(typeof(PanelTakeInputPatch));
+        _harmony.PatchAll(typeof(PanelMouseCapturePatch));
+        TestLabBridge.TryRegister();
+
+        // The Team Ward needs the server-signed team on pieces.
+        EnablePieceTeams();
 
         Logger.LogInfo($"{ModName} {Version} loaded.");
     }
@@ -52,7 +69,9 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
         if (!TeamsNet.IsAuthority)
             return;
         TeamRegistry.Instance.EnsureLoaded();
+        DeathRulesState.EnsureLoadedOnServer(Logger);
         PieceTeams.Tick(this);
+        SpawnStones.Tick(Logger);
         if (now >= _nextGuard)
         {
             _nextGuard = now + GuardIntervalSeconds;

@@ -1,0 +1,151 @@
+{
+  "name": "T-29 death rules: only a share of the loot is dropped",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": true,
+        "appliesTo": "EnemyTeamKill",
+        "keepEquipped": true,
+        "lootable": "Coins",
+        "percent": 50
+      }
+    },
+    {
+      "do": "clearInventory"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearGround"
+    },
+    {
+      "do": "give",
+      "prefab": "Coins",
+      "count": 500
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 50
+    },
+    {
+      "do": "give",
+      "prefab": "Flint",
+      "count": 20
+    },
+    {
+      "do": "give",
+      "prefab": "AxeBronze",
+      "equip": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.simulateDeath",
+      "args": {
+        "killer": "blue"
+      },
+      "label": "killed by blue"
+    },
+    {
+      "do": "teleport",
+      "dx": 30
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "teams.groundCount",
+      "args": {
+        "item": "Coins"
+      },
+      "expect": 250,
+      "label": "50 percent of the coins are on the ground"
+    },
+    {
+      "do": "hook",
+      "name": "teams.graveCount",
+      "args": {
+        "item": "Coins"
+      },
+      "expect": 250,
+      "label": "the other half is in the grave"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearGround"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "name": "T-15 a third team: four players, three teams, three spawn points",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "green",
+        "title": "Green",
+        "color": "#27AE60",
+        "x": 100,
+        "y": 35,
+        "z": -100
+      },
+      "expect": 3,
+      "label": "green joins red and blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setSpawn",
+      "args": {
+        "team": "red",
+        "x": 100,
+        "y": 35,
+        "z": 100
+      },
+      "expect": "100,35,100",
+      "label": "red spawn point (100, 35, 100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setSpawn",
+      "args": {
+        "team": "blue",
+        "x": -100,
+        "y": 35,
+        "z": -100
+      },
+      "expect": "-100,35,-100",
+      "label": "blue spawn point (-100, 35, -100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "green"
+      },
+      "expect": "green",
+      "label": "Bob -> green"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Amy",
+        "team": "green"
+      },
+      "expect": "green",
+      "label": "Amy -> green"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "100,35,100",
+      "label": "Alice spawns at (100, 35, 100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "expect": "-100,35,-100",
+      "label": "Bjornita spawns at (-100, 35, -100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "100,35,-100",
+      "label": "Bob spawns at (100, 35, -100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Amy"
+      },
+      "expect": "100,35,-100",
+      "label": "Amy spawns at (100, 35, -100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.sharedSpawns",
+      "expect": 0,
+      "label": "three teams, three different points"
+    },
+    {
+      "do": "hook",
+      "name": "teams.sameTeam",
+      "args": {
+        "a": "Bob",
+        "b": "Amy"
+      },
+      "expect": true,
+      "label": "Bob and Amy are teammates"
+    },
+    {
+      "do": "hook",
+      "name": "teams.sameTeam",
+      "args": {
+        "a": "Alice",
+        "b": "Bjornita"
+      },
+      "expect": false,
+      "label": "Alice and Bjornita are not"
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      },
+      "expect": true,
+      "label": "remove green again"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "",
+      "label": "Bob is unassigned once green is gone"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "none",
+      "label": "and spawns at the default"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

@@ -5,11 +5,11 @@
     <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
     <RootNamespace>DrakesServerTeams</RootNamespace>
     <AssemblyName>DrakesServerTeams</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.1.0-beta.1</Version>
     <BepInPluginName>DrakesServerTeams</BepInPluginName>
     <BepInGuid>com.drakemods.serverteams</BepInGuid>
     <ModInfoClass>DrakesServerTeamsPlugin</ModInfoClass>
-    <Description>Server-wide teams for Valheim: admin-assigned sides, team PvP rules, and team permissions for wards and locks.</Description>
+    <Description>EARLY PREVIEW (beta). Server-wide teams for Valheim: team colors, icons, glow and graves, per-team spawn points, an admin panel, and a Team Ward. Back up your world and characters.</Description>
     <WebsiteUrl>https://github.com/drakethos/DrakesServerTeams</WebsiteUrl>
   </PropertyGroup>
   <ItemGroup>

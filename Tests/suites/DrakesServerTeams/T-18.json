@@ -1,0 +1,162 @@
+{
+  "name": "T-18 the local client spawns at its own team's point (real spawn lookup)",
+  "description": "Bjornita is blue the whole time: her state must not leak into Alice's client.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.setSpawn",
+      "args": {
+        "team": "red",
+        "x": 100,
+        "y": 35,
+        "z": 100
+      },
+      "expect": "100,35,100",
+      "label": "red spawn point (100, 35, 100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setSpawn",
+      "args": {
+        "team": "blue",
+        "x": -100,
+        "y": 35,
+        "z": -100
+      },
+      "expect": "-100,35,-100",
+      "label": "blue spawn point (-100, 35, -100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice -> red"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.clientSpawn",
+      "expect": "100,35,100",
+      "label": "the client was told red's point"
+    },
+    {
+      "do": "hook",
+      "name": "teams.findSpawn",
+      "expect": "100,35,100",
+      "label": "Game.FindSpawnPoint returns red's point for Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Alice -> blue"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.findSpawn",
+      "expect": "-100,35,-100",
+      "label": "after moving to blue it returns blue's point"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

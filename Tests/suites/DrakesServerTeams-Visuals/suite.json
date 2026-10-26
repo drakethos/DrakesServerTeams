@@ -1,0 +1,64 @@
+{
+  "name": "DrakesServerTeams-Visuals",
+  "description": "Screenshots of the team visuals with several players: name colors, faction icons (built-in and a custom PNG), glow and graves. Pictures are written to the run's results folder as teams-*.png.",
+  "requireMods": [
+    {
+      "guid": "com.drakemods.serverteams",
+      "minVersion": "0.0.1"
+    }
+  ],
+  "configOverrides": [
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "1 Assignment",
+      "key": "AssignmentMode",
+      "value": "AdminOnly"
+    },
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "1 Assignment",
+      "key": "MoveToSpawnOnFirstTeam",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "4 Visuals",
+      "key": "TeamNameColor",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "4 Visuals",
+      "key": "TeamIcon",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "4 Visuals",
+      "key": "TeamGlow",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakemods.serverteams",
+      "section": "4 Visuals",
+      "key": "TeamGraveMarker",
+      "value": "true"
+    }
+  ],
+  "setup": {
+    "timeOfDay": 0.05,
+    "freezeTime": 1,
+    "god": 1,
+    "noBuild": "off",
+    "hideUnlockPopups": 1
+  },
+  "launchConfig": [
+    {
+      "guid": "com.drakemods.testlab",
+      "section": "Case",
+      "key": "OnLoad",
+      "value": ""
+    }
+  ],
+  "resetBetweenTests": true
+}

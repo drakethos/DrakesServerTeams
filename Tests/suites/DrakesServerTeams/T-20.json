@@ -1,0 +1,178 @@
+{
+  "name": "T-20 a first team moves the player to the team spawn point, a later change does not",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/MoveToSpawnOnFirstTeam": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setSpawn",
+      "args": {
+        "team": "red",
+        "x": 100,
+        "y": 35,
+        "z": 100
+      },
+      "expect": "100,35,100",
+      "label": "red spawn point (100, 35, 100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setSpawn",
+      "args": {
+        "team": "blue",
+        "x": -100,
+        "y": 35,
+        "z": -100
+      },
+      "expect": "-100,35,-100",
+      "label": "blue spawn point (-100, 35, -100)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearTeleports"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Bob -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teleportOrdered",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "100,35,100",
+      "label": "Bob (new) is sent to the red point"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearTeleports"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bob -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teleportOrdered",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "none",
+      "label": "moving Bob to blue later does not move him"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Alice -> blue"
+    },
+    {
+      "do": "wait",
+      "seconds": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.myPosition",
+      "contains": "-100,",
+      "label": "Alice (new) actually arrived at the blue point"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

@@ -5,7 +5,32 @@ Part of DrakeMods.
 
 **Teams** are server-wide sides (this mod). **Guilds** are player-formed (Smoothbrain Guilds). **Groups** are parties (Smoothbrain Groups). This mod does not replace or patch either.
 
-> **Status: Phase 1 (core) only.** Teams exist, players can be assigned, other mods can ask. Nothing in the world reacts to teams yet (no ward/lock integration, name hiding, PvP rules, spawn points).
+> [!WARNING]
+> ### ⚠️ 0.1.0-beta.1: brand new, early preview, not thoroughly tested
+> This is the **first public build** of DrakesServerTeams. It has only been tested in a single test world with one real player and simulated players, never on a busy server. Expect bugs, rough edges and changes between betas.
+>
+> **Use it at your own risk.**
+> - **Back up your world and your characters before installing** (the `worlds_local` folder and your character files), and do not try it first on a world you cannot afford to lose.
+> - It must be on the server **and** every client (it is network-checked), so everyone needs the same version.
+> - Teams, members and Team Wards are saved in the world and in the mod's own files (`BepInEx/config/DrakeMods.ServerTeams/`). Removing the mod later leaves Team Wards behind as unknown pieces.
+> - Please report problems with your `LogOutput.log` on the [GitHub issues](https://github.com/drakethos/DrakesServerTeams/issues) page.
+
+## What it does
+
+- **Teams** defined by the admin in `teams.json` (name, color, icon, glow color). Assigned by an admin, picked by players, or auto-balanced.
+- **Visuals:** names in the team color with the team icon above them (built-in shapes or your own PNG), a soft team glow, and team-marked graves.
+- **Spawn points** per team (members respawn there, or are moved there when they first join a team), and an opt-in copy of the start stones at a team's spawn.
+- **Team Ward:** an obsidian guard stone, admin-placed, that glows in its team's color. Its team has access; others are kept out of building and chests (doors are a switch). Shift+E opens its settings.
+- **Death rules** (off by default): keep gear, drop coins or chosen items for the killer.
+- **Admin tools:** the `teams` console command and an in-game admin panel (F6).
+- **For other mods:** `TeamsAPI` (who is on which team, signed piece teams, spawn points, Team Ward hooks).
+
+Not in this beta: capture-the-flag, wars and PvP rules (planned as a separate "War" extension), name hiding, Discord or whitelist assignment.
+
+![Four players on four teams: name colors, icons and glow](https://raw.githubusercontent.com/drakethos/DrakesServerTeams/main/docs/images/players-day.png)
+![Two Team Wards at night, glowing in their team colors](https://raw.githubusercontent.com/drakethos/DrakesServerTeams/main/docs/images/ward-night.png)
+
+More pictures: [gallery](https://github.com/drakethos/DrakesServerTeams/blob/main/docs/gallery.md).
 
 ## Setup
 
@@ -27,7 +52,7 @@ Edit it and restart the server. `Joinable`: a player may pick this team themself
 | Mode | Behavior |
 |------|----------|
 | `AdminOnly` (default) | Only an admin command or the server API assigns teams. |
-| `PlayerChoice` | A new character picks a joinable team with `teams join <team>`. After that only an admin moves them, unless `PlayersCanSwitchTeams` is on (then players not on a locked team may switch). |
+| `PlayerChoice` | A new character is shown a picker window the first time it loads in (`FirstJoinPicker`, on by default; `teams pick` reopens it) and can also use `teams join <team>`. After that only an admin moves them, unless `PlayersCanSwitchTeams` is on (then players not on a locked team may switch). |
 | `AutoBalance` | The server puts a new character on the joinable team with the fewest members. |
 
 "New character" means a character the server has no stored entry for.
@@ -46,10 +71,29 @@ The team each player shows to other clients is also corrected by the server ever
 ## Console commands (F5)
 
 - `teams`: your team and the team list
+- Admins: `teams panel` opens the admin panel (also the F6 key): players, teams, spawns, Team Ward, server settings
 - `teams join <team>`: pick a team when the server allows it
-- Admins only: `teams who`, `teams assign <player> <team>`, `teams forget <player|id:N>`
+- Admins only: `teams offer <player|all>` (show the team picker again), `teams who`, `teams assign <player> <team>`, `teams forget <player|id:N>`, `teams setspawn <team>` (uses where you stand), `teams clearspawn <team>`
 
 The server decides everything; commands only ask. Admin means the server's `adminlist.txt`, or the host on a listen server.
+
+## Spawn points
+
+Each team can have its own spawn point. Stand where you want it and run `teams setspawn <team>` (admin); `teams clearspawn <team>` removes it. Members respawn there after death unless they have a bed or are logging back in. A character that gets its first team is moved there at once (`MoveToSpawnOnFirstTeam`, default on). Teams that share a point are logged as a warning.
+
+## Death rules (optional)
+
+Off by default. `BepInEx/config/DrakeMods.ServerTeams/deathrules.json` (a starter is written on first run); `teams deathrules on` turns it on.
+
+| Field | Meaning |
+|-------|---------|
+| `AppliesTo` | `EnemyTeamKill` (killed by a player on another team, default), `AnyPlayerKill`, or `Always` |
+| `KeepEquipped` | gear the player wears stays with them (they respawn with it) |
+| `Keep` | more items that stay: a prefab name (`Flint`), `type:Material`, or `*` |
+| `EnemyLootable` | dropped on the ground where they died, for the killer to take (default `Coins`) |
+| `EnemyLootPercent` | share of each lootable stack dropped (1-100); the rest goes to the grave |
+
+Anything not kept or lootable goes into the grave as usual. Keep beats lootable. Rules are applied by the dying player's client, so a modified client can ignore them (same limit as the rest of the mod).
 
 ## What is stored (privacy)
 
@@ -60,6 +104,7 @@ The server keeps **one file, `members.json`**, with one entry per character that
 | `characterId` | The character's player ID (`Player.GetPlayerID()`), a number the game generates per character |
 | `teamId` | Which team |
 | `lastSeen` | UTC date (`yyyy-MM-dd`), the last day that character joined |
+| `offered` | whether this character was already shown the first-join team picker |
 
 That is all. **No Steam / platform ID, no account name, no IP, no character name, no location.** The character ID is not shown anywhere in the game. Character IDs are never written to the log (team changes log team names and the character name only), never sent to other clients, and never stored client-side. A client only ever receives its own team and the team list (id, name, color, flags).
 

@@ -1,0 +1,170 @@
+{
+  "name": "T-23 nameplates show team color and icon",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "4 Visuals/TeamNameColor": "true",
+        "4 Visuals/TeamIcon": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "lookAt",
+      "target": "Bjornita"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.nameplateOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "contains": "#2980B9|icon #2980B9",
+      "label": "the plate of Bjornita: blue name, blue icon"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "4 Visuals/TeamIcon": "false"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.nameplateOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "expect": "#2980B9|no icon",
+      "label": "icon off: name stays blue"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "4 Visuals/TeamNameColor": "false",
+        "4 Visuals/TeamIcon": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "red"
+      },
+      "expect": "red"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.nameplateOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "contains": "|icon #C0392B",
+      "label": "moved to red: the icon follows"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "4 Visuals/TeamNameColor": "true"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

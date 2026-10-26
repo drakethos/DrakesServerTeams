@@ -1,0 +1,245 @@
+{
+  "name": "T-46 Shift+E opens the Team Ward settings for admins only",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "build",
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "chests",
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "doors",
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Bob -> red"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3,
+      "as": "ward"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardInteract",
+      "args": {
+        "ward": "ward",
+        "alt": false
+      },
+      "expect": false,
+      "label": "plain E does not open the window"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardInteract",
+      "args": {
+        "ward": "ward",
+        "alt": true
+      },
+      "expect": true,
+      "label": "an admin pressing Shift+E opens it"
+    },
+    {
+      "do": "hook",
+      "name": "teams.closeWardPanel",
+      "expect": false,
+      "label": "closing works"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardInteract",
+      "args": {
+        "ward": "ward",
+        "alt": true
+      },
+      "expect": false,
+      "label": "a player who is not an admin cannot"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardHover",
+      "args": {
+        "ward": "ward"
+      },
+      "contains": "Shift+E",
+      "label": "admins see the hint on the ward"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Alice -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardHover",
+      "args": {
+        "ward": "ward"
+      },
+      "contains": "protected",
+      "label": "others just see it is protected"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ public static class TeamStore
 {
     public static string Folder => Path.Combine(Paths.ConfigPath, "DrakeMods.ServerTeams");
     public static string TeamsPath => Path.Combine(Folder, "teams.json");
+    public static string RulesPath => Path.Combine(Folder, "deathrules.json");
     public static string MembersPath => Path.Combine(Folder, "members.json");
 
     public static TeamsFile LoadTeams(ManualLogSource log)
@@ -33,6 +34,24 @@ public static class TeamStore
         log.LogInfo("Wrote a starter teams.json (red, blue). Edit it and restart the server.");
         return file;
     }
+
+    /// <summary>The death rules. First run writes a starter file with the rules switched off.</summary>
+    public static DeathRules LoadRules(ManualLogSource log)
+    {
+        var rules = Read<DeathRules>(RulesPath, log);
+        if (rules != null)
+            return rules;
+        if (File.Exists(RulesPath))
+            return new DeathRules();
+        rules = new DeathRules();
+        Write(RulesPath, rules, log);
+        log.LogInfo("Wrote a starter deathrules.json (switched off). Edit it and use 'teams deathrules on' to try it.");
+        return rules;
+    }
+
+    public static void SaveRules(DeathRules rules, ManualLogSource log) => Write(RulesPath, rules, log);
+
+    public static void SaveTeams(TeamsFile file, ManualLogSource log) => Write(TeamsPath, file, log);
 
     public static MembersFile LoadMembers(ManualLogSource log) =>
         Read<MembersFile>(MembersPath, log) ?? new MembersFile();

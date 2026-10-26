@@ -83,3 +83,77 @@ Decisions made while building it (change them here if wrong):
 
 ## Not verified against the live game
 Built against the Pfhoenix reference stubs only (what CI uses). Not decompiled from a Valheim 1.0 install, not run in game. Members to confirm: `Player.OnSpawned` (patched), `ZNet.GetPeer/GetPeers/IsServer/IsDedicated`, `ZNetPeer.m_uid/m_characterID/m_playerName/m_socket`, `ZDOMan.instance` (a property in the stubs), `ZDO.GetLong(int,long)` and the `"playerID"` ZDO key, `ZRoutedRpc.GetServerPeerID`, `ISocket.GetHostName`, `ZNet.m_adminList`/`ListContainsId` (reflection), `Console.instance`/`Print`. Jotunn `NetworkManager.AddRPC` / `CustomRPC.SendPackage` to the host's own peer ID (listen server) is also untested.
+
+## Spawn points (Phase 6, started 2026-10-25)
+- A team may have `HasSpawn` + `SpawnX/Y/Z` in `teams.json`. Admins set it in game: `teams setspawn <team>` (where the admin stands), `teams clearspawn <team>`. Saved to `teams.json`, pushed to every connected client.
+- `Game.FindSpawnPoint` postfix: team point replaces the world-start default only. A bed and the logout point win.
+- `MoveToSpawnOnFirstTeam` (synced, default on): a character that gets its FIRST team is teleported to the team point. Later moves do not teleport.
+- Two teams within 1 m of each other log a warning (each team should have its own).
+- Test: DrakesServerTeams suite T-10..T-21 (four players via Alice + Bjornita/Bob/Amy virtual players, two and three teams, auto-balance, spawn lookup, admin commands).
+
+## Ideas from the owner (2026-10-25), not built; order to be decided
+1. **Admin in-game tools**: add / move players between teams (exists: `teams assign`); a UI later.
+2. **First-join choice**: on a brand-new character show a team picker (or auto-assign). Assignment sources a server may want, as pluggable "providers":
+   - admin / config (today), player choice, auto-balance (today);
+   - **whitelist-driven**: a file `whitelist, player name, team`;
+   - **Discord role** mapping (out of process bot, see Discord section);
+   - **Server Characters** mod link (store the team with the server-side character), or a special tag stored on the character itself. Needs a look at that mod's API before choosing.
+3. **Visual identity** (Phase 3 expands): team color glow on the player, team-colored name / text, faction icon above the nameplate, grave distinction (team-colored tombstone / marker).
+4. **Death and looting rules** per team pairing: gear stays with the dead player, but enemies may loot gold and a configurable set of droppables. Needs a definition (item prefabs / categories / % ) in config, and a patch on tombstone / inventory drop.
+
+Open questions before 2-4: where team data for the whitelist provider lives (file next to teams.json is simplest); whether the picker needs Libs UI (UI Toolkit redesign in progress) or stays console-first; which loot rules are per team vs global.
+
+## Admin GUI (owner, 2026-10-25)
+Console stays the base; a command (e.g. `teams admin`) can also open a GUI for admins: team list, members, assign / move players, spawn points, icons, assignment mode. Not built. It should sit on top of the same server-checked commands (no new authority path). UI toolkit choice depends on the UI Toolkit redesign (Libs vs. standalone copy; Teams has no Libs dependency today).
+
+## Visuals (Phase 3 start, 2026-10-25)
+- Team `Icon` in `teams.json` (shield, circle, diamond, star, cross; drawn at runtime, no art shipped); admin command `teams seticon`.
+- Other players: nameplate name in team color + icon above it; a soft team-colored light on every player with a team.
+- Graves: the dying player's client writes the team on the grave; everyone sees a team light, floating icon, colored name text and a team line in the hover text.
+- Synced admin settings (section `4 Visuals`): TeamNameColor, TeamIcon, TeamGlow, TeamGlowRange, TeamGraveMarker. All client-side display only (a modified client can fake its own look; nothing is enforced by it).
+
+## Team Ward (owner brief 2026-10-26; Phase 5), plan
+A custom ward ("Team Ward") for team play and later capture-the-flag. Built at runtime from vanilla `guard_stone` (Jotunn clone + material swap, no art shipped, no AssetForge dependency; same recipe idea as AssetForge's "drakesis_guard_stone" with the obsidian material).
+
+**Look.** Obsidian material instead of the gold/dwarf one so it cannot be mistaken for a normal ward. Rune glow and a point light in the owning team's glow color, team label (name in team color + icon) floating above it, like players and graves.
+
+**Placing.** Admin only by default (`TeamWardAdminOnly`, synced). The team of a new ward = the placer's team (admin can change it).
+
+**Access.** Anyone on the ward's team is permitted (build, open, use inside it); everyone else is blocked like a normal ward. It ignores LockSmith's per-player lists and menus: only the owner or an admin changes its settings, from its own TeamWard panel (Shift+E). First version of the panel can be console/hover toggles; the proper tab comes with the admin GUI.
+
+**Capture (per ward flags + global defaults, both server-synced).**
+- `Capturable` flag, set by an admin (Shift+E).
+- Hold capture: an enemy-team player channels the interact key for `CaptureSeconds` (default 30) without interruption; leaving range, taking a hit, or letting go resets it. On success the ward's team flips (stamp rewritten by the server) and colors/label follow.
+- Capture health: optional `CaptureHealth`. Enemy damage lowers it; at 0 the ward becomes capturable / flips (mode per ward: Hold, Damage, Both). Same-team players repair by channeling interact (slow heal); a hit interrupts.
+- Conditions (later): only while the defenders are away, cooldown after capture, etc.
+
+**Server authority.** The server owns the capture timer and the team stamp; clients only send "I am channeling" and see progress. Reuses the existing signed piece-team stamp.
+
+**Phases.** A: piece + look + admin-only placing + team access. B: Shift+E flags (capturable, team, times). C: hold capture. D: capture health + repair. E: per-ward vs global configs and the panel UI. Each phase gets TestLab tests (virtual players as capturers/defenders) and a screenshot pass.
+
+**What a Team Ward protects (owner, 2026-10-26).** Per ward and as a global default (server-synced), each switch is on/off:
+- `BlockEnemyBuild`: enemies cannot hammer (place, repair, remove) inside it. On by default.
+- `ProtectChests`: enemies cannot open chests inside. On by default.
+- `ProtectDoors`: enemies cannot open doors inside. Off by default, so a team can leave doors open to raiders and still keep chests safe.
+- Further switches follow the same pattern (crafting stations, beds, ships, item stands). A per-ward value overrides the global default; "inherit" means use the global one. Team members always have access.
+
+## Scope split: Teams vs. "Server Teams - War" (owner, 2026-10-26)
+- **DrakesServerTeams (this mod) ships:** configurable colored Team Wards. Team label and glow, admin-only placing (setting), team members always have access, enemies are blocked from hammer (build/repair/remove) and from chests by default; doors and other things switchable (per ward + global). Nothing capturable, no wars.
+- **Server Teams - War (separate sub-mod, same GitHub repo, depends on the Teams API):** capture-the-flag wards (hold-to-capture, capture health, repair channel), crumbling/rebuildable structures under a ward, war windows, the wall rules below. Teams gets only the hooks War needs (ward team change, ward-protection query) and nothing War-specific.
+
+### The wall problem (open, owner to pick)
+Vanilla wards make structures inside them immune to player damage, so a team can wall in its flag and no one can ever reach it. Options written up in the chat: crumble instead of destroy, shield phase, war windows, clear zone around the flag. Not built.
+
+**Chosen (2026-10-26): Crumble + Shield phase.** Designed together in the War extension:
+- *Shield phase:* a flag ward has a shield (capture health). Shield up: structures inside are immune to enemies, as in vanilla. Shield broken: protection drops for a siege window (`SiegeMinutes`), then the shield regenerates (or the flag flips if captured).
+- *Crumble:* while protection is down, a piece that reaches 0 health inside the ward does not get deleted. It crumbles: broken visual state, colliders off (walkable), stays in the world. Only an authorized team member (hammer) can remove or repair it. Repair rules (no cheese): material cost, channel time per piece, per-piece cooldown after a crumble, and no repair while an enemy is within N m or the ward was hit in the last few seconds.
+- Open for the build: whether crumbled pieces count toward the build-piece limit, and whether crumbled pieces can be re-crumbled while still down (no).
+
+## War spike results (2026-10-26, debug-only code in Spikes/, suite DrakesServerTeams-Spike)
+Measured in the live game with a vanilla ward carrying a team stamp (no custom Team Ward piece needed yet):
+- **Where ward immunity lives:** NOT in `WearNTear.Damage`. A hit sent straight to a piece inside an enabled ward lands fully (400 -> 275 for a 50 blunt + chop hit), same as outside. The immunity is in the attack layer, so shield/crumble can hook `WearNTear.ApplyDamage` / `Destroy` / `Repair` (Harmony prefixes) without fighting it.
+- **Shield (works):** state on the ward ZDO (`DrakesWar_shield`, `DrakesWar_shieldDownAt`). Enemy-team hits on pieces inside the ward lower the shield and the piece stays untouched; at 0 the ward is DOWN and pieces take damage; after `down` seconds the shield is back to max (lazy regen on read). Same-team hits are vanilla.
+- **Crumble (works):** `Destroy` prefix for enemy hits while the shield is down: set `DrakesWar_crumbled`, health 1, colliders off (pieces have one non-trigger collider in `m_colliders`), return false so the piece is not deleted. Further hits ignored. A small component re-applies the collider state on every client from the ZDO (late joiners too). Aiming tools cannot hit a crumbled piece (no collider), which is expected.
+- **Repair rules (work):** `WearNTear.Repair` prefix: refuse unless the player is on the ward's team, refuse during `cooldown` after the crumble, then restore only `fraction` (30%) of max health.
+- **Not yet:** server-authoritative writes (spike writes the ward ZDO from whoever hits; the real version routes through the server), shield flash/sound/HUD bar, repair channel + material cost, "no repair while enemies near", crumbled broken-look screenshot (state exists, picture not captured), interplay with LockSmith and other ward mods, multi-ward overlap.
+- **Spawn stones note:** SpawnLocationMidGame snaps to a fixed spot per zone, so a team's spawn point moves to wherever the stones really land.

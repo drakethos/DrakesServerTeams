@@ -1,0 +1,373 @@
+{
+  "name": "V-01 four players on four teams: name colors, icons and glow",
+  "description": "Alice (camera) and Carol are Ember; Bjornita Tide (star); Bob Moss (a custom PNG icon); Amy Dusk (diamond, gold glow). Day and night.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      },
+      "expect": "sample-banner.png",
+      "label": "a custom icon file in the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "ember",
+        "title": "Ember",
+        "color": "#E67E22",
+        "icon": "shield",
+        "glow": ""
+      },
+      "label": "team Ember: #E67E22, icon shield"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "tide",
+        "title": "Tide",
+        "color": "#2980B9",
+        "icon": "star",
+        "glow": ""
+      },
+      "label": "team Tide: #2980B9, icon star"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "moss",
+        "title": "Moss",
+        "color": "#27AE60",
+        "icon": "sample-banner",
+        "glow": ""
+      },
+      "label": "team Moss: #27AE60, icon sample-banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "dusk",
+        "title": "Dusk",
+        "color": "#8E44AD",
+        "icon": "diamond",
+        "glow": "#F1C40F"
+      },
+      "label": "team Dusk: #8E44AD, icon diamond"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.5
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.goClearing",
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": -6,
+      "dz": 8
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -2,
+      "dz": 8
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 2,
+      "dz": 8
+    },
+    {
+      "do": "peerJoin",
+      "name": "Carol",
+      "dx": 6,
+      "dz": 8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "tide"
+      },
+      "expect": "tide",
+      "label": "Bjornita is on tide"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "moss"
+      },
+      "expect": "moss",
+      "label": "Bob is on moss"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Amy",
+        "team": "dusk"
+      },
+      "expect": "dusk",
+      "label": "Amy is on dusk"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Carol",
+        "team": "ember"
+      },
+      "expect": "ember",
+      "label": "Carol is on ember"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "face",
+      "target": "Bob"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-players-day",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.12
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-players-night",
+      "clean": true
+    },
+    {
+      "do": "peerMove",
+      "peer": "Bjornita",
+      "dx": 0,
+      "dz": 2.6
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "face",
+      "target": "Bjornita"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-closeup-tide-star",
+      "clean": true
+    },
+    {
+      "do": "peerMove",
+      "peer": "Bjornita",
+      "dx": -6,
+      "dz": 8
+    },
+    {
+      "do": "peerMove",
+      "peer": "Bob",
+      "dx": 0,
+      "dz": 2.6
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "face",
+      "target": "Bob"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-closeup-moss-custom-icon",
+      "clean": true
+    },
+    {
+      "do": "peerMove",
+      "peer": "Bob",
+      "dx": -2,
+      "dz": 8
+    },
+    {
+      "do": "peerMove",
+      "peer": "Amy",
+      "dx": 0,
+      "dz": 2.6
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "face",
+      "target": "Amy"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-closeup-dusk-gold-glow",
+      "clean": true
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

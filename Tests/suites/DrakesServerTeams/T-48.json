@@ -1,0 +1,170 @@
+{
+  "name": "T-48 first-join team picker: offered once, the server remembers, admins can offer again",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.setMode",
+      "args": {
+        "mode": "PlayerChoice"
+      },
+      "expect": "PlayerChoice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.helloOffer",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": true,
+      "label": "Bob (new, no team) is offered the picker"
+    },
+    {
+      "do": "hook",
+      "name": "teams.helloOffer",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": false,
+      "label": "the server wrote the flag: not offered again"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Bob picks a team (the picker button asks the server for this)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "offer Bob"
+      },
+      "contains": "picker shown to 1",
+      "label": "teams offer Bob: team cleared, picker shown again"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "",
+      "label": "Bob is back to no team"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setMode",
+      "args": {
+        "mode": "AutoBalance"
+      },
+      "expect": "AutoBalance"
+    },
+    {
+      "do": "hook",
+      "name": "teams.helloOffer",
+      "args": {
+        "player": "Amy"
+      },
+      "expect": false,
+      "label": "AutoBalance never shows the picker"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Amy"
+      },
+      "expect": "red",
+      "label": "Amy was auto-assigned the smallest team"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setMode",
+      "args": {
+        "mode": "AdminOnly"
+      },
+      "expect": "AdminOnly"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

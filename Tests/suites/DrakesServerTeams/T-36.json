@@ -1,0 +1,183 @@
+{
+  "name": "T-36 a team can have its own copy of the start stones (opt-in)",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.hasStartLocation",
+      "expect": true,
+      "label": "the game has a StartTemple location to copy"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "spawnstones red on"
+      },
+      "contains": "no spawn point yet",
+      "label": "stones need a spawn point first"
+    },
+    {
+      "do": "teleport",
+      "dz": 60
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setspawn red"
+      },
+      "contains": "now spawns at",
+      "label": "stand on open ground and set the spawn of red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.stonesNear",
+      "args": {
+        "team": "red"
+      },
+      "expect": false,
+      "label": "no stones there yet"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "spawnstones red on"
+      },
+      "contains": "start stones placed",
+      "label": "teams spawnstones red on"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamSpawn",
+      "args": {
+        "team": "red"
+      },
+      "contains": "",
+      "label": "asked for"
+    },
+    {
+      "do": "hook",
+      "name": "teams.stonesPlacedAt",
+      "contains": "",
+      "label": "the game put them at"
+    },
+    {
+      "do": "hook",
+      "name": "teams.stonesNear",
+      "args": {
+        "team": "red"
+      },
+      "expect": true,
+      "label": "a start location now stands at the spawn point of red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.ensureStones",
+      "args": {
+        "team": "red"
+      },
+      "expect": "exists",
+      "label": "asking again places nothing more"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "spawnstones red off"
+      },
+      "contains": "no new start stones",
+      "label": "teams spawnstones red off"
+    },
+    {
+      "do": "hook",
+      "name": "teams.stonesNear",
+      "args": {
+        "team": "red"
+      },
+      "expect": true,
+      "label": "stones already placed stay in the world"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "spawnstones red maybe"
+      },
+      "contains": "Usage",
+      "label": "a bad word is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "clearspawn red"
+      },
+      "contains": "no longer has a spawn point",
+      "label": "clean up the spawn point"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

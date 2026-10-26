@@ -1,0 +1,169 @@
+{
+  "name": "T-45 console: assign me / all, forget me",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "assign me red"
+      },
+      "contains": "now on Red",
+      "label": "teams assign me red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "red",
+      "label": "that was Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "assign Bjornita blue"
+      },
+      "contains": "now on Blue",
+      "label": "teams assign Bjornita blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "assign all blue"
+      },
+      "contains": "player(s) are now on Blue",
+      "label": "teams assign all blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "blue",
+      "label": "Bob followed"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "blue",
+      "label": "and Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "forget me"
+      },
+      "contains": "Deleted the stored entry",
+      "label": "teams forget me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "",
+      "label": "Alice has no team"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "assign all purple"
+      },
+      "contains": "Unknown team",
+      "label": "an unknown team is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.labTabRegistered",
+      "expect": "yes",
+      "label": "the Teams tab is in the DrakesTestLab toolbox"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

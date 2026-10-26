@@ -1,0 +1,225 @@
+{
+  "name": "T-27 death rules: a teammate's kill, or a monster, changes nothing",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": true,
+        "appliesTo": "EnemyTeamKill",
+        "keepEquipped": true,
+        "lootable": "Coins",
+        "percent": 100
+      }
+    },
+    {
+      "do": "clearInventory"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearGround"
+    },
+    {
+      "do": "give",
+      "prefab": "Coins",
+      "count": 500
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 50
+    },
+    {
+      "do": "give",
+      "prefab": "Flint",
+      "count": 20
+    },
+    {
+      "do": "give",
+      "prefab": "AxeBronze",
+      "equip": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.simulateDeath",
+      "args": {
+        "killer": "red"
+      },
+      "label": "killed by red"
+    },
+    {
+      "do": "teleport",
+      "dx": 30
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "teams.invCount",
+      "args": {
+        "item": "AxeBronze"
+      },
+      "expect": 0,
+      "label": "killed by a teammate: normal grave, the axe went too"
+    },
+    {
+      "do": "hook",
+      "name": "teams.graveCount",
+      "args": {
+        "item": "Coins"
+      },
+      "expect": 500,
+      "label": "coins are in the grave"
+    },
+    {
+      "do": "hook",
+      "name": "teams.groundCount",
+      "args": {
+        "item": "Coins"
+      },
+      "expect": 0,
+      "label": "nothing on the ground"
+    },
+    {
+      "do": "clearInventory"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearGround"
+    },
+    {
+      "do": "give",
+      "prefab": "Coins",
+      "count": 500
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 50
+    },
+    {
+      "do": "give",
+      "prefab": "Flint",
+      "count": 20
+    },
+    {
+      "do": "give",
+      "prefab": "AxeBronze",
+      "equip": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.simulateDeath",
+      "args": {
+        "killer": "monster"
+      },
+      "label": "killed by monster"
+    },
+    {
+      "do": "teleport",
+      "dx": 30
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "teams.invCount",
+      "args": {
+        "item": "AxeBronze"
+      },
+      "expect": 0,
+      "label": "killed by a monster: normal grave"
+    },
+    {
+      "do": "hook",
+      "name": "teams.graveCount",
+      "args": {
+        "item": "Coins"
+      },
+      "expect": 500,
+      "label": "graveCount Coins = 500"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearGround"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

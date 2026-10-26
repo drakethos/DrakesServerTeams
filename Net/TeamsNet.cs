@@ -27,12 +27,15 @@ public static class TeamsNet
         Stamp = 4,
         State = 10,
         Message = 11,
+        Teleport = 12,
     }
 
     static CustomRPC _rpc = null!;
     static ManualLogSource _log = null!;
     static MonoBehaviour _host = null!;
     static Coroutine? _hello;
+
+    internal static void Warn(string message) => _log?.LogWarning(message);
 
     public static bool IsAuthority => ZNet.instance != null && ZNet.instance.IsServer();
 
@@ -44,6 +47,7 @@ public static class TeamsNet
         _rpc = NetworkManager.Instance.AddRPC(RpcName, Receive, Receive);
         TeamRegistry.Instance.SetLog(log);
         TeamRegistry.Instance.Changed += OnServerTeamChanged;
+        TeamRegistry.Instance.DefinitionsChanged += BroadcastState;
     }
 
     // ---- client side ----------------------------------------------------------------------------------
@@ -72,6 +76,20 @@ public static class TeamsNet
     public static void RequestChoose(string teamId) => SendToServer(Op.Choose, p => p.Write(teamId));
 
     public static void RequestAdmin(string commandLine) => SendToServer(Op.Admin, p => p.Write(commandLine));
+
+    /// <summary>
+    /// An admin command from the local player (console, panel, test bench). The host runs it right here; a client asks the server, which
+    /// checks admin rights. The reply is shown on screen either way.
+    /// </summary>
+    public static void RunAdmin(string commandLine)
+    {
+        if (IsAuthority && Player.m_localPlayer != null)
+        {
+            Say(TeamsAdmin.Run(commandLine, Player.m_localPlayer.GetPlayerName(), Player.m_localPlayer.transform.position));
+            return;
+        }
+        RequestAdmin(commandLine);
+    }
 
     /// <summary>The local player built a ward, chest or door: the server stamps it with our team.</summary>
     public static void RequestStamp(ZDOID id)
@@ -142,7 +160,19 @@ public static class TeamsNet
             case Op.Message:
                 Say(pkg.ReadString());
                 break;
+            case Op.Teleport:
+                MoveToSpawn(pkg.ReadLong(), new Vector3(pkg.ReadSingle(), pkg.ReadSingle(), pkg.ReadSingle()));
+                break;
         }
+    }
+
+    /// <summary>The server put us on our first team: go to its spawn point. Only for our own character.</summary>
+    static void MoveToSpawn(long playerId, Vector3 point)
+    {
+        var player = Player.m_localPlayer;
+        if (player == null || player.GetPlayerID() != playerId)
+            return;
+        player.TeleportTo(point, player.transform.rotation, true);
     }
 
     static void ReadState(ZPackage pkg)
@@ -152,6 +182,7 @@ public static class TeamsNet
         var own = pkg.ReadString();
         var mode = (AssignmentMode)pkg.ReadInt();
         var canSwitch = pkg.ReadBool();
+        var offerPicker = pkg.ReadBool();
         var count = pkg.ReadInt();
         var teams = new List<TeamDefinition>(count);
         for (var i = 0; i < count; i++)
@@ -163,13 +194,36 @@ public static class TeamsNet
                 Color = pkg.ReadString(),
                 Joinable = pkg.ReadBool(),
                 Locked = pkg.ReadBool(),
+                HasSpawn = pkg.ReadBool(),
+                SpawnX = pkg.ReadSingle(),
+                SpawnY = pkg.ReadSingle(),
+                SpawnZ = pkg.ReadSingle(),
+                Icon = pkg.ReadString(),
+                GlowColor = pkg.ReadString(),
             });
         }
+
+        var rules = new DeathRules
+        {
+            Enabled = pkg.ReadBool(),
+            AppliesTo = pkg.ReadString(),
+            KeepEquipped = pkg.ReadBool(),
+            EnemyLootPercent = pkg.ReadInt(),
+            Keep = DeathRulesState.Split(pkg.ReadString()),
+            EnemyLootable = DeathRulesState.Split(pkg.ReadString()),
+        };
+        // On the host the server's own copy is the original; do not replace it with a round trip.
+        if (!IsAuthority)
+            DeathRulesState.Apply(rules);
 
         var hadTeam = TeamsClientState.OwnTeamId != null;
         var firstState = !TeamsClientState.Ready;
         TeamsClientState.Apply(Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L, own, mode, canSwitch, teams);
         PublishOwnTeam();
+        if (TeamsClientState.OwnTeamId != null)
+            TeamPicker.Close();
+        else if (offerPicker && mode == AssignmentMode.PlayerChoice)
+            TeamPicker.Open();
         if (firstState && !hadTeam && TeamsClientState.OwnTeamId == null && mode == AssignmentMode.PlayerChoice)
             Say("Pick a team: open the console (F5) and type  teams join <team>.  Teams: " + JoinIds(TeamsClientState.Teams, joinableOnly: true));
         else if (firstState && TeamsClientState.OwnTeamId != null)
@@ -261,10 +315,7 @@ public static class TeamsNet
         switch (op)
         {
             case Op.Hello:
-                if (!registry.HasEntry(characterId) && TeamsConfig.AssignmentMode == AssignmentMode.AutoBalance)
-                    registry.TryAutoAssign(characterId, name);
-                registry.Touch(characterId);
-                SendState(sender, characterId);
+                SendState(sender, characterId, ProcessHello(characterId, name));
                 break;
 
             case Op.Choose:
@@ -286,7 +337,8 @@ public static class TeamsNet
                     SendMessage(sender, "Admins only.");
                     break;
                 }
-                SendMessage(sender, TeamsAdmin.Run(pkg.ReadString(), name));
+                PeerIdentity.TryGetPosition(sender, out var adminPos);
+                SendMessage(sender, TeamsAdmin.Run(pkg.ReadString(), name, adminPos));
                 break;
         }
     }
@@ -324,6 +376,43 @@ public static class TeamsNet
         var sender = PeerIdentity.FindSender(characterId);
         if (sender != null)
             SendState(sender.Value, characterId);
+        // A character's very first team: put them at that team's spawn point.
+        if (oldTeam == null && newTeam != null && TeamsConfig.MoveToSpawnOnFirstTeam)
+        {
+            var spawn = TeamRegistry.Instance.GetSpawnPoint(characterId);
+            if (spawn != null)
+            {
+                TeleportsSent[characterId] = spawn.Value;
+                if (sender != null)
+                    SendTeleport(sender.Value, characterId, spawn.Value);
+            }
+        }
+    }
+
+    /// <summary>Last first-team move the server ordered, by character (for tests).</summary>
+    internal static readonly Dictionary<long, Vector3> TeleportsSent = new();
+
+    static void SendTeleport(long target, long characterId, Vector3 point)
+    {
+        var pkg = new ZPackage();
+        pkg.Write((int)Op.Teleport);
+        pkg.Write(characterId);
+        pkg.Write(point.x);
+        pkg.Write(point.y);
+        pkg.Write(point.z);
+        _rpc.SendPackage(target, pkg);
+    }
+
+    /// <summary>Server: every connected player gets the current team list again (a team definition changed).</summary>
+    public static void BroadcastState()
+    {
+        if (!IsAuthority || ZNet.instance == null)
+            return;
+        if (!ZNet.instance.IsDedicated() && PeerIdentity.TryResolve(PeerIdentity.ServerPeerId(), out var hostId, out _))
+            SendState(PeerIdentity.ServerPeerId(), hostId);
+        foreach (var peer in ZNet.instance.GetPeers())
+            if (PeerIdentity.TryResolve(peer.m_uid, out var id, out _))
+                SendState(peer.m_uid, id);
     }
 
     static void SendNotReady(long target)
@@ -334,7 +423,34 @@ public static class TeamsNet
         _rpc.SendPackage(target, pkg);
     }
 
-    static void SendState(long target, long characterId)
+    /// <summary>
+    /// A character says hello (it just loaded in). Auto-balance gives it a team; under PlayerChoice a character with no team that has not
+    /// been shown the picker yet is offered it, and the server writes the flag so it is only offered once. Returns "show the picker".
+    /// </summary>
+    internal static bool ProcessHello(long characterId, string name)
+    {
+        var registry = TeamRegistry.Instance;
+        if (registry.GetTeamId(characterId) == null && TeamsConfig.AssignmentMode == AssignmentMode.AutoBalance)
+            registry.TryAutoAssign(characterId, name);
+        registry.Touch(characterId);
+        var offer = TeamsConfig.AssignmentMode == AssignmentMode.PlayerChoice && TeamsConfig.FirstJoinPicker
+                    && registry.GetTeamId(characterId) == null && !registry.WasOffered(characterId);
+        if (offer)
+            registry.SetOffered(characterId, true);
+        return offer;
+    }
+
+    /// <summary>Server: show the team picker to this character again (admin command "teams offer").</summary>
+    internal static bool OfferPicker(long characterId)
+    {
+        var sender = PeerIdentity.FindSender(characterId);
+        if (sender == null)
+            return false;
+        SendState(sender.Value, characterId, true);
+        return true;
+    }
+
+    static void SendState(long target, long characterId, bool offerPicker = false)
     {
         var registry = TeamRegistry.Instance;
         var own = registry.GetTeamId(characterId);
@@ -347,6 +463,7 @@ public static class TeamsNet
         pkg.Write(own ?? "");
         pkg.Write((int)TeamsConfig.AssignmentMode);
         pkg.Write(canSwitch);
+        pkg.Write(offerPicker);
         pkg.Write(registry.Teams.Count);
         foreach (var t in registry.Teams)
         {
@@ -355,7 +472,22 @@ public static class TeamsNet
             pkg.Write(t.Color);
             pkg.Write(t.Joinable);
             pkg.Write(t.Locked);
+            pkg.Write(t.HasSpawn);
+            pkg.Write(t.SpawnX);
+            pkg.Write(t.SpawnY);
+            pkg.Write(t.SpawnZ);
+            pkg.Write(t.Icon ?? "shield");
+            pkg.Write(t.GlowColor ?? "");
         }
+
+        DeathRulesState.EnsureLoadedOnServer(_log);
+        var rules = DeathRulesState.Current;
+        pkg.Write(rules.Enabled);
+        pkg.Write(rules.AppliesTo ?? "EnemyTeamKill");
+        pkg.Write(rules.KeepEquipped);
+        pkg.Write(rules.EnemyLootPercent);
+        pkg.Write(DeathRulesState.Join(rules.Keep));
+        pkg.Write(DeathRulesState.Join(rules.EnemyLootable));
         _rpc.SendPackage(target, pkg);
     }
 

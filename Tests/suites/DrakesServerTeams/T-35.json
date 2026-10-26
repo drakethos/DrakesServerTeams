@@ -1,0 +1,260 @@
+{
+  "name": "T-35 colors by name or hex, icons by shape or by file",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.parseColor",
+      "args": {
+        "text": "gold"
+      },
+      "expect": "#F1C40F",
+      "label": "a color by name"
+    },
+    {
+      "do": "hook",
+      "name": "teams.parseColor",
+      "args": {
+        "text": "#f80"
+      },
+      "expect": "#FF8800",
+      "label": "short hex"
+    },
+    {
+      "do": "hook",
+      "name": "teams.parseColor",
+      "args": {
+        "text": "2980b9"
+      },
+      "expect": "#2980B9",
+      "label": "full hex without the #"
+    },
+    {
+      "do": "hook",
+      "name": "teams.parseColor",
+      "args": {
+        "text": "banana"
+      },
+      "expect": "invalid",
+      "label": "nonsense is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconName",
+      "args": {
+        "icon": "STAR"
+      },
+      "expect": "star",
+      "label": "built-in, any case"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconName",
+      "args": {
+        "icon": "Banner.png"
+      },
+      "expect": "banner",
+      "label": "a file name (the .png is optional)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconName",
+      "args": {
+        "icon": "../secret"
+      },
+      "expect": "shield",
+      "label": "an unsafe name falls back to the default"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconKind",
+      "args": {
+        "icon": "sample-crest"
+      },
+      "expect": "missing",
+      "label": "no such file yet"
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeSampleIcon",
+      "args": {
+        "icon": "sample-crest"
+      },
+      "expect": "sample-crest.png",
+      "label": "drop a PNG into the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconKind",
+      "args": {
+        "icon": "sample-crest"
+      },
+      "expect": "file",
+      "label": "now it is found"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconKind",
+      "args": {
+        "icon": "diamond"
+      },
+      "expect": "builtin"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setcolor red gold"
+      },
+      "contains": "color: #F1C40F",
+      "label": "teams setcolor red gold"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setcolor red banana"
+      },
+      "contains": "Use a color",
+      "label": "a bad color is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setcolor red #C0392B"
+      },
+      "contains": "color: #C0392B",
+      "label": "put red back"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "seticon blue sample-crest"
+      },
+      "contains": "icon: sample-crest",
+      "label": "teams seticon blue sample-crest"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "lookAt",
+      "target": "Bjornita"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.nameplateOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "contains": "|icon #FFFFFF",
+      "label": "a custom icon keeps its own colors (not tinted)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "seticon blue shield"
+      },
+      "contains": "icon: shield",
+      "label": "back to the shield"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-crest"
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

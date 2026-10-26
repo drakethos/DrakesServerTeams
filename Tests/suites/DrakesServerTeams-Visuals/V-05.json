@@ -1,0 +1,302 @@
+{
+  "name": "V-05 the Team Ward: obsidian look, team glow and label, and its Shift+E settings",
+  "description": "Two Team Wards (Ember and Tide) next to each other: obsidian body, rune glow and light in the team color, icon and name above. The last picture is the Shift+E settings window.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      },
+      "expect": "sample-banner.png",
+      "label": "a custom icon file in the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "ember",
+        "title": "Ember",
+        "color": "#E67E22",
+        "icon": "shield",
+        "glow": ""
+      },
+      "label": "team Ember: #E67E22, icon shield"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "tide",
+        "title": "Tide",
+        "color": "#2980B9",
+        "icon": "star",
+        "glow": ""
+      },
+      "label": "team Tide: #2980B9, icon star"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "moss",
+        "title": "Moss",
+        "color": "#27AE60",
+        "icon": "sample-banner",
+        "glow": ""
+      },
+      "label": "team Moss: #27AE60, icon sample-banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "dusk",
+        "title": "Dusk",
+        "color": "#8E44AD",
+        "icon": "diamond",
+        "glow": "#F1C40F"
+      },
+      "label": "team Dusk: #8E44AD, icon diamond"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.5
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.goClearing",
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 9,
+      "dx": -3,
+      "as": "wardA"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "tide"
+      },
+      "expect": "tide"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 9,
+      "dx": 4,
+      "as": "wardB"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "face",
+      "target": "wardA"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-day",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.12
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-night",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dz": 5
+    },
+    {
+      "do": "face",
+      "target": "wardA"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-closeup",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardInteract",
+      "args": {
+        "ward": "wardA",
+        "alt": true
+      },
+      "contains": "",
+      "label": "Shift+E as an admin"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-settings"
+    },
+    {
+      "do": "hook",
+      "name": "teams.closeWardPanel",
+      "contains": ""
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

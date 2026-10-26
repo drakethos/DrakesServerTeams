@@ -1,0 +1,249 @@
+{
+  "name": "T-10 four players, two teams: all placed, all told apart",
+  "description": "Alice is the local player; the three others are virtual players that joined through the game's own connection code.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Bjornita -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bob -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Amy",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Amy -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "red",
+      "label": "Alice is red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "expect": "red",
+      "label": "Bjornita is red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "blue",
+      "label": "Bob is blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Amy"
+      },
+      "expect": "blue",
+      "label": "Amy is blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.sameTeam",
+      "args": {
+        "a": "Alice",
+        "b": "Bjornita"
+      },
+      "expect": true,
+      "label": "Alice and Bjornita are teammates"
+    },
+    {
+      "do": "hook",
+      "name": "teams.sameTeam",
+      "args": {
+        "a": "Bob",
+        "b": "Amy"
+      },
+      "expect": true,
+      "label": "Bob and Amy are teammates"
+    },
+    {
+      "do": "hook",
+      "name": "teams.sameTeam",
+      "args": {
+        "a": "Alice",
+        "b": "Bob"
+      },
+      "expect": false,
+      "label": "Alice and Bob are opponents"
+    },
+    {
+      "do": "hook",
+      "name": "teams.sameTeam",
+      "args": {
+        "a": "Bjornita",
+        "b": "Amy"
+      },
+      "expect": false,
+      "label": "Bjornita and Amy are opponents"
+    },
+    {
+      "do": "hook",
+      "name": "teams.memberCount",
+      "args": {
+        "team": "red"
+      },
+      "expect": 2,
+      "label": "two on red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.memberCount",
+      "args": {
+        "team": "blue"
+      },
+      "expect": 2,
+      "label": "two on blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.guardNow",
+      "expect": "red",
+      "label": "the server publishes Alice as red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.publishedTeamOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "expect": "red",
+      "label": "Bjornita's character shows red to other clients"
+    },
+    {
+      "do": "hook",
+      "name": "teams.publishedTeamOf",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "blue",
+      "label": "Bob's character shows blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.publishedTeamOf",
+      "args": {
+        "player": "Amy"
+      },
+      "expect": "blue",
+      "label": "Amy's character shows blue"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

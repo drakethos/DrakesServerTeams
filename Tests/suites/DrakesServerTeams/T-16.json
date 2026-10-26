@@ -1,0 +1,142 @@
+{
+  "name": "T-16 auto-balance puts four players 2 and 2",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AutoBalance"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.autoAssign",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "red",
+      "label": "Alice (first) -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.autoAssign",
+      "args": {
+        "player": "Bjornita"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.autoAssign",
+      "args": {
+        "player": "Bob"
+      },
+      "expect": "red",
+      "label": "Bob -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.autoAssign",
+      "args": {
+        "player": "Amy"
+      },
+      "expect": "blue",
+      "label": "Amy -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.memberCount",
+      "args": {
+        "team": "red"
+      },
+      "expect": 2,
+      "label": "two on red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.memberCount",
+      "args": {
+        "team": "blue"
+      },
+      "expect": 2,
+      "label": "two on blue"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

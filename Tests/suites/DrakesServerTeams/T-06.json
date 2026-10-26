@@ -57,6 +57,10 @@
     {
       "check": "noErrors",
       "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
     }
   ]
 }

@@ -64,6 +64,20 @@ public static class TeamsAPI
     public static IReadOnlyCollection<TeamDefinition> GetTeams() =>
         IsAuthority ? TeamRegistry.Instance.Teams : TeamsClientState.Teams;
 
+    /// <summary>
+    /// Where this player spawns for their team (respawn without a bed), or null when they have no team or the team has
+    /// no spawn point. The authority answers for anyone; a client only for itself.
+    /// </summary>
+    public static UnityEngine.Vector3? GetSpawnPoint(long playerId)
+    {
+        if (IsAuthority)
+            return TeamRegistry.Instance.GetSpawnPoint(playerId);
+        if (!IsLocalPlayerId(playerId) || TeamsClientState.PlayerId != playerId)
+            return null;
+        var team = TeamsClientState.GetTeam(TeamsClientState.OwnTeamId);
+        return team != null && team.HasSpawn ? team.GetSpawnPoint() : null;
+    }
+
     /// <summary>True only when both players are assigned and on the same team.</summary>
     public static bool AreSameTeam(long a, long b)
     {
@@ -117,6 +131,18 @@ public static class TeamsAPI
         var pieceTeam = GetPieceTeamId(view);
         return pieceTeam != null && string.Equals(pieceTeam, GetTeamId(player), StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// Add a section to the Team Ward settings window (Shift+E on a Team Ward, admins). The callback draws with IMGUI <c>GUILayout</c> for the ward
+    /// being edited. Used by extensions such as the War mod (capture flags and times, shield).
+    /// </summary>
+    public static void RegisterTeamWardSection(string title, System.Action<PrivateArea> draw) => WardPanel.AddSection(title, draw);
+
+    /// <summary>True when the object is a Team Ward.</summary>
+    public static bool IsTeamWard(PrivateArea? area) => TeamWard.IsTeamWard(area);
+
+    /// <summary>The team a Team Ward belongs to (server-signed), or null.</summary>
+    public static string? GetTeamWardTeam(PrivateArea area) => TeamWard.TeamOf(area);
 
     public delegate void TeamChanged(long playerId, string? oldTeamId, string? newTeamId);
 

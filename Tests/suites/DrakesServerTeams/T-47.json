@@ -1,0 +1,105 @@
+{
+  "name": "T-47 the serverteams-spawns case: me on Red, Bjornita on Blue, two spawn points",
+  "description": "",
+  "steps": [
+    {
+      "do": "case",
+      "name": "serverteams-spawns"
+    },
+    {
+      "do": "wait",
+      "seconds": 3.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "me"
+      },
+      "expect": "red",
+      "label": "I am on Red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "expect": "blue",
+      "label": "Bjornita joined and is on Blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamSpawn",
+      "args": {
+        "team": "red"
+      },
+      "contains": "-25,",
+      "label": "Red spawn x"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamSpawn",
+      "args": {
+        "team": "red"
+      },
+      "contains": ",20",
+      "label": "Red spawn z"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamSpawn",
+      "args": {
+        "team": "blue"
+      },
+      "contains": "25,",
+      "label": "Blue spawn x"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "me"
+      },
+      "contains": "-25,",
+      "label": "my spawn is the Red point"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "contains": "25,",
+      "label": "Bjornita spawns at the Blue point"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

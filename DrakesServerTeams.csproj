@@ -97,7 +97,11 @@
     <Compile Include="Commands\TeamsCommand.cs" />
     <Compile Include="Config\TeamsConfig.cs" />
     <Compile Include="Core\AssignmentMode.cs" />
+    <Compile Include="Core\DeathRules.cs" />
+    <Compile Include="Core\TeamLoot.cs" />
     <Compile Include="Core\PieceTeams.cs" />
+    <Compile Include="Core\SpawnStones.cs" />
+    <Compile Include="Core\TeamWard.cs" />
     <Compile Include="Core\TeamDefinition.cs" />
     <Compile Include="Core\TeamFiles.cs" />
     <Compile Include="Core\TeamRegistry.cs" />
@@ -107,8 +111,23 @@
     <Compile Include="Net\TeamsClientState.cs" />
     <Compile Include="Net\TeamsNet.cs" />
     <Compile Include="Patches\PlayerSpawnPatch.cs" />
+    <Compile Include="Patches\DeathLootPatch.cs" />
+    <Compile Include="Patches\TeamSpawnPatch.cs" />
+    <Compile Include="Patches\TeamWardPatches.cs" />
+    <Compile Include="Patches\VisualPatches.cs" />
+    <Compile Include="Visuals\GameFields.cs" />
+    <Compile Include="Visuals\TeamIcons.cs" />
+    <Compile Include="Visuals\TeamGlow.cs" />
+    <Compile Include="Visuals\TeamGrave.cs" />
+    <Compile Include="UI\TeamsPanel.cs" />
+    <Compile Include="UI\AdminPanel.cs" />
+    <Compile Include="UI\WardPanel.cs" />
+    <Compile Include="UI\TeamPicker.cs" />
+    <Compile Include="Visuals\TeamWardVisual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Testing\TeamsTestHooks.cs" Condition="'$(Configuration)' == 'Debug'" />
+    <Compile Include="Spikes\WarSpike.cs" Condition="'$(Configuration)' == 'Debug'" />
+    <Compile Include="Spikes\WarCrumble.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="DrakesServerTeamsPlugin.cs" />
   </ItemGroup>
   <ItemGroup>

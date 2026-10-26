@@ -1,0 +1,255 @@
+{
+  "name": "V-03 a team with its own copy of the start stones",
+  "description": "A copy of the vanilla start stones at the Ember spawn point. The original temple stays the true spawn for everyone else.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      },
+      "expect": "sample-banner.png",
+      "label": "a custom icon file in the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "ember",
+        "title": "Ember",
+        "color": "#E67E22",
+        "icon": "shield",
+        "glow": ""
+      },
+      "label": "team Ember: #E67E22, icon shield"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "tide",
+        "title": "Tide",
+        "color": "#2980B9",
+        "icon": "star",
+        "glow": ""
+      },
+      "label": "team Tide: #2980B9, icon star"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "moss",
+        "title": "Moss",
+        "color": "#27AE60",
+        "icon": "sample-banner",
+        "glow": ""
+      },
+      "label": "team Moss: #27AE60, icon sample-banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "dusk",
+        "title": "Dusk",
+        "color": "#8E44AD",
+        "icon": "diamond",
+        "glow": "#F1C40F"
+      },
+      "label": "team Dusk: #8E44AD, icon diamond"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.5
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.goClearing",
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "teleport",
+      "dz": 18
+    },
+    {
+      "do": "wait",
+      "seconds": 2.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setspawn ember"
+      },
+      "contains": "now spawns at",
+      "label": "stand where the team should spawn and set it"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "spawnstones ember on"
+      },
+      "contains": "start stones",
+      "label": "switch the stones on for the team"
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.viewTeamSpawn",
+      "args": {
+        "team": "ember",
+        "dist": 24
+      },
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 3.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-spawn-stones-day",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.12
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-spawn-stones-night",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "clearspawn ember"
+      },
+      "contains": "no longer has a spawn point",
+      "label": "clean up"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

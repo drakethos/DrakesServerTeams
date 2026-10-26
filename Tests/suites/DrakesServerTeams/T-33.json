@@ -1,0 +1,187 @@
+{
+  "name": "T-33 a team can have its own glow color (falls back to the team color)",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.glowOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "#C0392B",
+      "label": "no GlowColor: the glow is the team color"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setGlow",
+      "args": {
+        "team": "red",
+        "color": "#00FF00"
+      },
+      "expect": "#00FF00",
+      "label": "red gets a green glow"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.glowOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "#00FF00",
+      "label": "Alice now glows green"
+    },
+    {
+      "do": "hook",
+      "name": "teams.glowOf",
+      "args": {
+        "player": "Bjornita"
+      },
+      "expect": "#2980B9",
+      "label": "blue is unchanged"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setglow red #FF8800"
+      },
+      "contains": "glow: #FF8800",
+      "label": "teams setglow red #FF8800"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setglow red banana"
+      },
+      "contains": "Use a color",
+      "label": "a bad color is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setglow red none"
+      },
+      "contains": "follows the team color",
+      "label": "teams setglow red none"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.glowOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "#C0392B",
+      "label": "back to the team color"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

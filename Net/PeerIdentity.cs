@@ -59,6 +59,27 @@ public static class PeerIdentity
         return characterId != 0;
     }
 
+    /// <summary>Where the sender's character stands (host: the local player, a client: its player ZDO).</summary>
+    public static bool TryGetPosition(long sender, out UnityEngine.Vector3 position)
+    {
+        position = default;
+        if (ZNet.instance == null)
+            return false;
+        if (IsHostLocal(sender))
+        {
+            if (Player.m_localPlayer == null)
+                return false;
+            position = Player.m_localPlayer.transform.position;
+            return true;
+        }
+        var peer = ZNet.instance.GetPeer(sender);
+        var zdo = peer != null && ZDOMan.instance != null ? ZDOMan.instance.GetZDO(peer.m_characterID) : null;
+        if (zdo == null)
+            return false;
+        position = zdo.GetPosition();
+        return true;
+    }
+
     public static bool IsAdmin(long sender)
     {
         if (ZNet.instance == null)

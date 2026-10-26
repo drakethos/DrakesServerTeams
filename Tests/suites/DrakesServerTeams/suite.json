@@ -1,10 +1,10 @@
 {
   "name": "DrakesServerTeams",
-  "description": "Automated regression for DrakesServerTeams: assignment and switching rules, server-signed piece teams on wards, chests and doors (stamp on build, keep on team change, backfill, forged stamps removed) and the server correcting faked published teams. Players are simulated with play-as (Alice, Bob, Carol).",
+  "description": "Automated regression for DrakesServerTeams: assignment and switching rules, server-signed piece teams on wards, chests and doors (stamp on build, keep on team change, backfill, forged stamps removed) and the server correcting faked published teams. Players are simulated with play-as (Alice, Bob, Carol); the multi-player tests (T-10..T-18) add virtual players (Bjornita, Bob, Amy): four players on two or three teams, unique spawn points per team, auto-balance.",
   "requireMods": [
     {
       "guid": "com.drakemods.serverteams",
-      "minVersion": "0.1.0"
+      "minVersion": "0.0.1"
     }
   ],
   "configOverrides": [
@@ -28,5 +28,13 @@
     "noBuild": "off",
     "hideUnlockPopups": 1
   },
+  "launchConfig": [
+    {
+      "guid": "com.drakemods.testlab",
+      "section": "Case",
+      "key": "OnLoad",
+      "value": ""
+    }
+  ],
   "resetBetweenTests": true
 }

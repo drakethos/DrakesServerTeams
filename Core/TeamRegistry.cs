@@ -25,6 +25,9 @@ public sealed class TeamRegistry
 
     public event TeamsAPI.TeamChanged? Changed;
 
+    /// <summary>A team definition changed (spawn point): connected players need the new team list.</summary>
+    public event Action? DefinitionsChanged;
+
     public IReadOnlyCollection<TeamDefinition> Teams
     {
         get { EnsureLoaded(); return _order; }
@@ -46,6 +49,30 @@ public sealed class TeamRegistry
     {
         EnsureLoaded();
         return _members.ContainsKey(playerId);
+    }
+
+    /// <summary>Has this character already been shown the first-join team picker?</summary>
+    public bool WasOffered(long playerId)
+    {
+        EnsureLoaded();
+        return _members.TryGetValue(playerId, out var m) && m.offered;
+    }
+
+    /// <summary>Write the "picker shown" flag (creates a team-less entry for a brand-new character). Saved at once.</summary>
+    public void SetOffered(long playerId, bool offered)
+    {
+        EnsureLoaded();
+        if (!_members.TryGetValue(playerId, out var entry))
+        {
+            if (!offered)
+                return;
+            _members[playerId] = entry = new MemberEntry { characterId = playerId, lastSeen = Today() };
+        }
+        if (entry.offered == offered)
+            return;
+        entry.offered = offered;
+        _dirty = true;
+        FlushIfDirty();
     }
 
     public int MemberCount(string teamId)
@@ -78,6 +105,11 @@ public sealed class TeamRegistry
             }
             if (string.IsNullOrWhiteSpace(t.DisplayName))
                 t.DisplayName = t.Id;
+            t.Icon = TeamIcons.Normalize(t.Icon);
+            if (TeamIcons.TryParseColor(t.Color, out var parsed))
+                t.Color = TeamIcons.ToHex(parsed);
+            if (!string.IsNullOrWhiteSpace(t.GlowColor) && TeamIcons.TryParseColor(t.GlowColor, out var glow))
+                t.GlowColor = TeamIcons.ToHex(glow);
             _teams[t.Id] = t;
             _order.Add(t);
         }
@@ -92,10 +124,149 @@ public sealed class TeamRegistry
             _members[m.characterId] = m;
         }
 
+        WarnSharedSpawns();
         _log.LogInfo($"Loaded {_order.Count} team(s) and {_members.Count} stored player(s).");
         if (_order.Count == 0)
             _log.LogWarning($"No teams defined. Add teams to {TeamStore.TeamsPath} and restart the server.");
         Purge();
+    }
+
+    /// <summary>Teams whose spawn point is within 1 m of an earlier team's. Each team should have its own.</summary>
+    public List<string> SharedSpawns()
+    {
+        EnsureLoaded();
+        var found = new List<string>();
+        for (var i = 0; i < _order.Count; i++)
+        for (var j = 0; j < i; j++)
+            if (_order[i].HasSpawn && _order[j].HasSpawn
+                && (_order[i].GetSpawnPoint() - _order[j].GetSpawnPoint()).sqrMagnitude < 1f)
+                found.Add($"{_order[j].Id}+{_order[i].Id}");
+        return found;
+    }
+
+    void WarnSharedSpawns()
+    {
+        foreach (var pair in SharedSpawns())
+            _log.LogWarning($"Teams {pair} have the same spawn point. Give each team its own in teams.json.");
+    }
+
+    /// <summary>Admin: give a team a spawn point, or remove it (null). Saved to teams.json and pushed to clients.</summary>
+    public bool SetTeamSpawn(string teamId, UnityEngine.Vector3? point)
+    {
+        var team = GetTeam(teamId);
+        if (team == null)
+            return false;
+        if (point == null)
+            team.HasSpawn = false;
+        else
+            team.SetSpawn(point.Value);
+        SaveTeamsFile();
+        WarnSharedSpawns();
+        DefinitionsChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>Admin: change a team's faction icon (an unknown name falls back to the default). Saved and pushed to clients.</summary>
+    public bool SetTeamIcon(string teamId, string icon)
+    {
+        var team = GetTeam(teamId);
+        if (team == null)
+            return false;
+        team.Icon = TeamIcons.Normalize(icon);
+        SaveTeamsFile();
+        DefinitionsChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>Admin: turn the team's own start stones on or off. Saved to teams.json. Stones already placed in the world stay.</summary>
+    public bool SetTeamSpawnStones(string teamId, bool on)
+    {
+        var team = GetTeam(teamId);
+        if (team == null)
+            return false;
+        team.SpawnStones = on;
+        SaveTeamsFile();
+        return true;
+    }
+
+    /// <summary>Admin: set a team's color ("#RRGGBB", "#RGB" or a name). Stored as #RRGGBB. False for an unknown team or a bad color.</summary>
+    public bool SetTeamColor(string teamId, string color)
+    {
+        var team = GetTeam(teamId);
+        if (team == null || !TeamIcons.TryParseColor(color, out var c))
+            return false;
+        team.Color = TeamIcons.ToHex(c);
+        SaveTeamsFile();
+        DefinitionsChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>Admin: set the glow color of a team ("#RRGGBB"), or "" to use the team color. Returns false for an unknown team or a bad color.</summary>
+    public bool SetTeamGlow(string teamId, string color)
+    {
+        var team = GetTeam(teamId);
+        if (team == null)
+            return false;
+        var c = (color ?? "").Trim();
+        if (c.Length > 0 && !TeamIcons.TryParseColor(c, out _))
+            return false;
+        team.GlowColor = c;
+        SaveTeamsFile();
+        DefinitionsChanged?.Invoke();
+        return true;
+    }
+
+    readonly HashSet<string> _runtime = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Write teams.json, leaving out teams that only exist for a test run.</summary>
+    void SaveTeamsFile()
+    {
+        var file = new TeamsFile();
+        foreach (var t in _order)
+            if (!_runtime.Contains(t.Id))
+                file.teams.Add(t);
+        TeamStore.SaveTeams(file, _log);
+    }
+
+    /// <summary>Test tooling: add a team at runtime (not written to teams.json).</summary>
+    internal TeamDefinition DefineTeam(TeamDefinition team)
+    {
+        EnsureLoaded();
+        if (_teams.TryGetValue(team.Id, out var existing))
+            _order.Remove(existing);
+        _teams[team.Id] = team;
+        _order.Add(team);
+        _runtime.Add(team.Id);
+        return team;
+    }
+
+    /// <summary>Test tooling: remove a team; its members become unassigned.</summary>
+    internal bool RemoveTeam(string id)
+    {
+        EnsureLoaded();
+        if (!_teams.TryGetValue(id, out var team))
+            return false;
+        _teams.Remove(id);
+        _order.Remove(team);
+        _runtime.Remove(id);
+        foreach (var m in _members.Values)
+            if (string.Equals(m.teamId, id, StringComparison.OrdinalIgnoreCase))
+                m.teamId = "";
+        return true;
+    }
+
+    /// <summary>Test tooling: characters that have a stored entry.</summary>
+    internal List<long> MemberIds()
+    {
+        EnsureLoaded();
+        return new List<long>(_members.Keys);
+    }
+
+    /// <summary>Spawn point of the team the character is on, or null (no team, or the team has none).</summary>
+    public UnityEngine.Vector3? GetSpawnPoint(long playerId)
+    {
+        var team = GetTeam(GetTeamId(playerId));
+        return team != null && team.HasSpawn ? team.GetSpawnPoint() : null;
     }
 
     /// <summary>Server-side assignment (admin command, server API). Ignores Joinable and Locked.</summary>

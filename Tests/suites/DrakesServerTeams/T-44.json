@@ -1,0 +1,107 @@
+{
+  "name": "T-44 only admins can place a Team Ward",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3,
+      "as": "refused",
+      "expect": false
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "admin",
+        "on": false
+      }
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3,
+      "as": "allowed"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "admin",
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": "auto"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

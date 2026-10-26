@@ -1,0 +1,105 @@
+{
+  "name": "T-25 admins change a team icon",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "seticon red star"
+      },
+      "contains": "icon: star",
+      "label": "teams seticon red star"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setIcon",
+      "args": {
+        "team": "red",
+        "icon": "banana"
+      },
+      "expect": "shield",
+      "label": "an unknown shape falls back to the default"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setIcon",
+      "args": {
+        "team": "red",
+        "icon": "cross"
+      },
+      "expect": "cross"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "seticon purple star"
+      },
+      "contains": "Unknown team"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setIcon",
+      "args": {
+        "team": "red",
+        "icon": "shield"
+      },
+      "expect": "shield"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

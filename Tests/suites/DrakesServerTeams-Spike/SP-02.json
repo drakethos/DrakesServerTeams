@@ -1,0 +1,353 @@
+{
+  "name": "SP-02 shield + crumble",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "spike.enable",
+      "contains": "",
+      "args": {
+        "shield": true,
+        "crumble": true,
+        "shieldMax": 200,
+        "down": 30,
+        "cooldown": 5,
+        "fraction": 0.3
+      },
+      "label": "prototype on"
+    },
+    {
+      "do": "hook",
+      "name": "teams.usePieceTeams",
+      "contains": "",
+      "label": "piece teams on"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "contains": "",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "label": "Alice red"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": -4,
+      "dz": -3
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "contains": "",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "label": "Bjornita blue"
+    },
+    {
+      "do": "place",
+      "prefab": "guard_stone",
+      "dz": 3,
+      "as": "ward"
+    },
+    {
+      "do": "place",
+      "prefab": "woodwall",
+      "dx": 2.5,
+      "dz": 3,
+      "as": "wall"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.checkPiece",
+      "contains": "",
+      "args": {
+        "target": "ward"
+      },
+      "label": "ward stamped"
+    },
+    {
+      "do": "hook",
+      "name": "spike.enableWard",
+      "contains": "",
+      "args": {
+        "ward": "ward",
+        "on": true
+      },
+      "label": "ward on"
+    },
+    {
+      "do": "hook",
+      "name": "spike.shield",
+      "contains": "",
+      "args": {
+        "ward": "ward"
+      },
+      "label": "shield at start"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hit",
+      "contains": "",
+      "args": {
+        "piece": "wall",
+        "attacker": "Bjornita",
+        "dmg": 40
+      },
+      "label": "ENEMY hit 1: shield takes it"
+    },
+    {
+      "do": "hook",
+      "name": "spike.shield",
+      "contains": "",
+      "args": {
+        "ward": "ward"
+      },
+      "label": "shield"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hp",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "wall hp (untouched)"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hit",
+      "contains": "",
+      "args": {
+        "piece": "wall",
+        "attacker": "Bjornita",
+        "dmg": 40
+      },
+      "label": "ENEMY hit 2: shield breaks"
+    },
+    {
+      "do": "hook",
+      "name": "spike.shield",
+      "contains": "",
+      "args": {
+        "ward": "ward"
+      },
+      "label": "shield (down)"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hp",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "wall hp (still untouched)"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hit",
+      "contains": "",
+      "args": {
+        "piece": "wall",
+        "attacker": "Bjornita",
+        "dmg": 40
+      },
+      "label": "ENEMY hit 3: siege, wall takes damage"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hp",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "wall hp after siege hit"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hit",
+      "contains": "",
+      "args": {
+        "piece": "wall",
+        "attacker": "Alice",
+        "dmg": 10
+      },
+      "label": "OWN TEAM hits the wall (friendly)"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hp",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "wall hp after friendly hit"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hit",
+      "contains": "",
+      "args": {
+        "piece": "wall",
+        "attacker": "Bjornita",
+        "dmg": 3000
+      },
+      "label": "ENEMY smashes it: crumbles"
+    },
+    {
+      "do": "hook",
+      "name": "spike.isCrumbled",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "crumbled?"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hp",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "hp"
+    },
+    {
+      "do": "hook",
+      "name": "spike.solid",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "solid?"
+    },
+    {
+      "do": "face",
+      "target": "wall"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "screenshot",
+      "name": "spike-wall-crumbled",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "spike.hit",
+      "contains": "",
+      "args": {
+        "piece": "wall",
+        "attacker": "Bjornita",
+        "dmg": 500
+      },
+      "label": "ENEMY hits the crumbled wall again"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hp",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "hp (unchanged)"
+    },
+    {
+      "do": "playAs",
+      "who": "Bjornita"
+    },
+    {
+      "do": "hook",
+      "name": "spike.repair",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "ENEMY tries to repair"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "spike.repair",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "ALICE repairs too early"
+    },
+    {
+      "do": "wait",
+      "seconds": 5.5
+    },
+    {
+      "do": "hook",
+      "name": "spike.repair",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "ALICE repairs after the cooldown"
+    },
+    {
+      "do": "hook",
+      "name": "spike.isCrumbled",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "crumbled?"
+    },
+    {
+      "do": "hook",
+      "name": "spike.hp",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "hp (30 percent)"
+    },
+    {
+      "do": "hook",
+      "name": "spike.solid",
+      "contains": "",
+      "args": {
+        "piece": "wall"
+      },
+      "label": "solid again?"
+    },
+    {
+      "do": "wait",
+      "seconds": 31
+    },
+    {
+      "do": "hook",
+      "name": "spike.shield",
+      "contains": "",
+      "args": {
+        "ward": "ward"
+      },
+      "label": "shield after the down time (back up)"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": []
+}

@@ -1,0 +1,180 @@
+{
+  "name": "T-30 death rules: Keep list by name and by type",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": true,
+        "appliesTo": "EnemyTeamKill",
+        "keepEquipped": false,
+        "keep": "Flint,type:OneHandedWeapon",
+        "lootable": "Coins",
+        "percent": 100
+      }
+    },
+    {
+      "do": "clearInventory"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearGround"
+    },
+    {
+      "do": "give",
+      "prefab": "Coins",
+      "count": 500
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 50
+    },
+    {
+      "do": "give",
+      "prefab": "Flint",
+      "count": 20
+    },
+    {
+      "do": "give",
+      "prefab": "AxeBronze",
+      "equip": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.simulateDeath",
+      "args": {
+        "killer": "blue"
+      },
+      "expect": "keep=2 drop=1 grave=1",
+      "label": "killed by blue"
+    },
+    {
+      "do": "teleport",
+      "dx": 30
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "teams.invCount",
+      "args": {
+        "item": "Flint"
+      },
+      "expect": 20,
+      "label": "Flint stays (by name)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.invCount",
+      "args": {
+        "item": "AxeBronze"
+      },
+      "expect": 1,
+      "label": "the axe stays (by type OneHandedWeapon) even though KeepEquipped is off"
+    },
+    {
+      "do": "hook",
+      "name": "teams.invCount",
+      "args": {
+        "item": "Wood"
+      },
+      "expect": 0,
+      "label": "Wood is not on the list"
+    },
+    {
+      "do": "hook",
+      "name": "teams.graveCount",
+      "args": {
+        "item": "Wood"
+      },
+      "expect": 50,
+      "label": "graveCount Wood = 50"
+    },
+    {
+      "do": "hook",
+      "name": "teams.groundCount",
+      "args": {
+        "item": "Coins"
+      },
+      "expect": 500,
+      "label": "groundCount Coins = 500"
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearGround"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

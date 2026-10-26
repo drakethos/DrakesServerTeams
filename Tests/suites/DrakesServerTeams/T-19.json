@@ -1,0 +1,123 @@
+{
+  "name": "T-19 admins set and clear a team spawn point where they stand",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+      }
+    },
+    {
+      "do": "teleport",
+      "x": 40,
+      "z": 55
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setspawn red"
+      },
+      "contains": "now spawns at",
+      "label": "teams setspawn red"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Alice"
+      },
+      "contains": "40,",
+      "label": "red spawns where the admin stood"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setspawn purple"
+      },
+      "contains": "Unknown team",
+      "label": "an unknown team is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "clearspawn red"
+      },
+      "contains": "no longer",
+      "label": "teams clearspawn red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.spawnOf",
+      "args": {
+        "player": "Alice"
+      },
+      "expect": "none",
+      "label": "red has no spawn point again"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

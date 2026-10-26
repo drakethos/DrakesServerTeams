@@ -24,6 +24,12 @@ public sealed class TeamsCommand : ConsoleCommand
 
         switch (args[0].ToLowerInvariant())
         {
+            case "pick":
+                TeamPicker.Open();
+                break;
+            case "panel":
+                AdminPanel.Toggle();
+                break;
             case "join":
                 if (args.Length < 2)
                     TeamsNet.Say("Usage: teams join <team>");
@@ -36,7 +42,7 @@ public sealed class TeamsCommand : ConsoleCommand
         }
     }
 
-    public override List<string> CommandOptionList() => new() { "list", "join", "who", "assign", "forget" };
+    public override List<string> CommandOptionList() => new() { "list", "join", "who", "assign", "forget", "setspawn", "clearspawn", "seticon", "pick", "offer", "panel", "deathrules", "setglow", "setcolor", "spawnstones", "ward" };
 
     static void Show()
     {

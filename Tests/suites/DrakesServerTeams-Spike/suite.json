@@ -1,0 +1,26 @@
+{
+  "name": "DrakesServerTeams-Spike",
+  "description": "Throwaway measurements for the crumble/shield spike.",
+  "requireMods": [
+    {
+      "guid": "com.drakemods.serverteams",
+      "minVersion": "0.0.1"
+    }
+  ],
+  "setup": {
+    "timeOfDay": 0.5,
+    "freezeTime": 1,
+    "god": 1,
+    "noBuild": "off",
+    "hideUnlockPopups": 1
+  },
+  "launchConfig": [
+    {
+      "guid": "com.drakemods.testlab",
+      "section": "Case",
+      "key": "OnLoad",
+      "value": ""
+    }
+  ],
+  "resetBetweenTests": true
+}

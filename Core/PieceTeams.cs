@@ -140,8 +140,31 @@ public static class PieceTeams
         // Only the builder may ask, and only for a piece type that carries a team.
         if (zdo.GetLong(CreatorKey, 0L) != characterId || !IsStampedPrefab(zdo.GetPrefab()))
             return true;
+        // A Team Ward from someone who may not place one (a modified client skipped the check): remove it.
+        if (TeamsConfig.TeamWardAdminOnly && zdo.GetPrefab() == TeamWard.PrefabName.GetStableHashCode() && !IsAdminCharacter(characterId))
+        {
+            _log.LogWarning("A Team Ward placed by a non-admin was removed.");
+            ZDOMan.instance?.DestroyZDO(zdo);
+            return true;
+        }
         var team = TeamRegistry.Instance.GetTeamId(characterId);
         zdo.Set(StampKey, team != null ? MakeStamp(team, characterId) : "");
+        return true;
+    }
+
+    static bool IsAdminCharacter(long characterId)
+    {
+        var sender = PeerIdentity.FindSender(characterId);
+        return sender != null && PeerIdentity.IsAdmin(sender.Value);
+    }
+
+    /// <summary>Server: set a piece's team (admin tool). Signed for the piece's creator like any stamp; null clears it. False if the piece has no creator.</summary>
+    internal static bool Assign(ZDO zdo, string? teamId)
+    {
+        var creator = zdo.GetLong(CreatorKey, 0L);
+        if (creator == 0)
+            return false;
+        zdo.Set(StampKey, string.IsNullOrEmpty(teamId) ? "" : MakeStamp(teamId!, creator));
         return true;
     }
 

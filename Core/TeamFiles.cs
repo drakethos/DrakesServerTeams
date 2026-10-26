@@ -19,6 +19,8 @@ public sealed class MemberEntry
     public string teamId = "";
     /// <summary>UTC date, yyyy-MM-dd. Used only to purge idle entries.</summary>
     public string lastSeen = "";
+    /// <summary>True once the server has shown this character the team picker (so it only appears the first time).</summary>
+    public bool offered;
 }
 
 /// <summary>members.json: server-only, never sent to clients.</summary>
