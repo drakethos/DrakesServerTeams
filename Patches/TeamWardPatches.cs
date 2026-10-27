@@ -58,7 +58,7 @@ static class WardInteractPatch
         if (__2)
         {
             if (TeamWard.LocalIsAdmin())
-                WardPanel.Open(__instance);
+                AdminPanel.OpenWard(__instance);
             else
                 TeamsNet.Say("Only admins can change a Team Ward.");
             return false;

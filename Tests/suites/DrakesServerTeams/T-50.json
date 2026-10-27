@@ -1,0 +1,358 @@
+{
+  "name": "T-50 start stones are off by default (experimental), the panel has tabs, and a panel blocks the game input",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "teleport",
+      "dz": 60
+    },
+    {
+      "do": "wait",
+      "seconds": 2.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setspawn red 20 20"
+      },
+      "contains": "now spawns at",
+      "label": "set the red spawn by coordinates"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "spawnstones red on"
+      },
+      "contains": "experimental",
+      "label": "teams spawnstones refuses while the setting is off"
+    },
+    {
+      "do": "hook",
+      "name": "teams.ensureStones",
+      "args": {
+        "team": "red"
+      },
+      "contains": "disabled",
+      "label": "and nothing is placed"
+    },
+    {
+      "do": "hook",
+      "name": "teams.stonesNear",
+      "args": {
+        "team": "red"
+      },
+      "expect": false,
+      "label": "no start location appeared"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "clearspawn red"
+      },
+      "contains": "no longer has a spawn point"
+    },
+    {
+      "do": "hook",
+      "name": "teams.panelTab",
+      "expect": "closed",
+      "label": "the panel starts closed"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.panelTab",
+      "expect": "Players",
+      "label": "it opens on the Players tab"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": false
+      },
+      "expect": false
+    },
+    {
+      "do": "hook",
+      "name": "teams.gameTakesInput",
+      "expect": "yes",
+      "label": "the game reads attack and look input normally"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.gameTakesInput",
+      "expect": "no",
+      "label": "with the panel open it does not (no punching, no camera)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": false
+      },
+      "expect": false
+    },
+    {
+      "do": "hook",
+      "name": "teams.gameTakesInput",
+      "expect": "yes",
+      "label": "and it comes back when the panel closes"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "build",
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "chests",
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "doors",
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Bob -> red"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3,
+      "as": "ward"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardInteract",
+      "args": {
+        "ward": "ward",
+        "alt": true
+      },
+      "expect": true,
+      "label": "Shift+E opens the admin panel"
+    },
+    {
+      "do": "hook",
+      "name": "teams.panelTab",
+      "expect": "Ward",
+      "label": "on the Ward tab"
+    },
+    {
+      "do": "hook",
+      "name": "teams.gameTakesInput",
+      "expect": "no",
+      "label": "and it also blocks the game input"
+    },
+    {
+      "do": "hook",
+      "name": "teams.closeWardPanel",
+      "expect": false
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

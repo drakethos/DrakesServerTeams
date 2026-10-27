@@ -13,6 +13,7 @@ public static class TeamsConfig
     static ConfigEntry<AssignmentMode> _assignmentMode = null!;
     static ConfigEntry<bool> _playersCanSwitch = null!;
     static ConfigEntry<bool> _moveToSpawn = null!;
+    static ConfigEntry<bool> _stonesExperimental = null!;
     static ConfigEntry<bool> _firstJoinPicker = null!;
     static ConfigEntry<BepInEx.Configuration.KeyboardShortcut> _panelKey = null!;
     static ConfigEntry<bool> _wardAdminOnly = null!;
@@ -61,6 +62,8 @@ public static class TeamsConfig
     public static float TeamWardRadius => _wardRadius.Value;
     /// <summary>PlayerChoice: a character that has no team is shown a picker window the first time it loads in.</summary>
     public static bool FirstJoinPicker => _firstJoinPicker.Value;
+    /// <summary>Allow the experimental per-team start stones. Off by default: the game places them with a mid-game terrain edit that can leave seams.</summary>
+    public static bool SpawnStonesExperimental => _stonesExperimental.Value;
     /// <summary>A character that gets its first team is moved to that team's spawn point (if it has one).</summary>
     public static bool MoveToSpawnOnFirstTeam => _moveToSpawn.Value;
     /// <summary>Server only. Minimum seconds between two passes that check every team-stamped piece.</summary>
@@ -88,6 +91,11 @@ public static class TeamsConfig
             new ConfigDescription(
                 "PlayerChoice only: a character with no team gets a window listing the joinable teams the first time it loads in. "
                 + "The server remembers that it was shown (members.json), so it does not come back every login; 'teams join <team>' and 'teams pick' still work.",
+                null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+        _stonesExperimental = config.Bind("7 Experimental", "SpawnStonesExperimental", false,
+            new ConfigDescription(
+                "EXPERIMENTAL, can damage a world. Allows 'teams spawnstones <team> on': a copy of the start stones at a team's spawn point. The game places it "
+                + "with a mid-game terrain edit that can leave seams and height jumps between zones, and it is saved in the world. Leave this off on any world you care about.",
                 null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
         _moveToSpawn = config.Bind("1 Assignment", "MoveToSpawnOnFirstTeam", true,
             new ConfigDescription(

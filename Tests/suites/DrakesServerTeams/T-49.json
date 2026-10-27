@@ -1,0 +1,199 @@
+{
+  "name": "T-49 with RenameIt and DrakeModsLibs installed, Shift+E on a Team Ward is ours, not the rename window",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita",
+      "dx": 3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bob",
+      "dx": -3,
+      "dz": 0
+    },
+    {
+      "do": "peerJoin",
+      "name": "Amy",
+      "dx": 0,
+      "dz": 4
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "build",
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "chests",
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setWardDefault",
+      "args": {
+        "what": "doors",
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice -> red"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bjornita",
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bjornita -> blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Bob",
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Bob -> red"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3,
+      "as": "ward"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.libsClaim",
+      "args": {
+        "ward": "ward"
+      },
+      "expect": "DrakesServerTeams",
+      "label": "Libs reports the Team Ward as claimed"
+    },
+    {
+      "do": "hook",
+      "name": "teams.closeWardPanel",
+      "expect": false
+    },
+    {
+      "do": "lookAt",
+      "target": "ward"
+    },
+    {
+      "do": "interact",
+      "target": "ward",
+      "asPlayer": true,
+      "alt": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardPanelOpen",
+      "expect": true,
+      "label": "the Team Ward settings window opened (Shift+E, through the real interact path)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.renameWindowOpen",
+      "expect": "no",
+      "label": "the RenameIt rename window did not"
+    },
+    {
+      "do": "hook",
+      "name": "teams.closeWardPanel",
+      "expect": false
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

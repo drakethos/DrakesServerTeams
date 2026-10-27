@@ -11,6 +11,7 @@ namespace DrakesServerTeams;
 [BepInPlugin(GUID, ModName, Version)]
 [BepInDependency(Main.ModGuid)]
 [BepInDependency("com.drakemods.testlab", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("com.drakemods.libs", BepInDependency.DependencyFlags.SoftDependency)]
 [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
 {
@@ -45,11 +46,13 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
             _harmony.PatchAll(t);
 
         gameObject.AddComponent<AdminPanel>();
-        gameObject.AddComponent<WardPanel>();
         gameObject.AddComponent<TeamPicker>();
         _harmony.PatchAll(typeof(PanelTakeInputPatch));
+        _harmony.PatchAll(typeof(PanelControllerTakeInputPatch));
+        _harmony.PatchAll(typeof(PanelScrollPatch));
         _harmony.PatchAll(typeof(PanelMouseCapturePatch));
         TestLabBridge.TryRegister();
+        LibsBridge.TryRegister();
 
         // The Team Ward needs the server-signed team on pieces.
         EnablePieceTeams();

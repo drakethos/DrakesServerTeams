@@ -136,7 +136,7 @@ public static class TeamsAPI
     /// Add a section to the Team Ward settings window (Shift+E on a Team Ward, admins). The callback draws with IMGUI <c>GUILayout</c> for the ward
     /// being edited. Used by extensions such as the War mod (capture flags and times, shield).
     /// </summary>
-    public static void RegisterTeamWardSection(string title, System.Action<PrivateArea> draw) => WardPanel.AddSection(title, draw);
+    public static void RegisterTeamWardSection(string title, System.Action<PrivateArea> draw) => AdminPanel.AddSection(title, draw);
 
     /// <summary>True when the object is a Team Ward.</summary>
     public static bool IsTeamWard(PrivateArea? area) => TeamWard.IsTeamWard(area);

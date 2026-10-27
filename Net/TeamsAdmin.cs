@@ -103,6 +103,9 @@ public static class TeamsAdmin
                 if (st == null)
                     return $"Unknown team '{args[1]}'.";
                 var on = args[2].Equals("on", StringComparison.OrdinalIgnoreCase);
+                if (on && !TeamsConfig.SpawnStonesExperimental)
+                    return "Start stones are experimental and off. They are placed with a mid-game terrain edit that can leave seams and height jumps in the world. "
+                           + "If you really want to try them on a world you have backed up, set 7 Experimental/SpawnStonesExperimental to true.";
                 if (on && !st.HasSpawn)
                     return $"{st.DisplayName} has no spawn point yet. Stand where you want it and run: teams setspawn {st.Id}";
                 registry.SetTeamSpawnStones(st.Id, on);

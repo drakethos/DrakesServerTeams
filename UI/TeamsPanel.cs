@@ -10,6 +10,14 @@ namespace DrakesServerTeams;
 /// Every button sends the same command a console line would ("teams assign Bob red"), so the server decides and checks admin rights;
 /// the panel adds no authority of its own.
 /// </summary>
+public enum PanelTab
+{
+    Players,
+    Teams,
+    Ward,
+    Server,
+}
+
 internal static class TeamsPanelUi
 {
     static readonly string[] Palette = { "red", "orange", "gold", "green", "teal", "blue", "purple", "pink" };
@@ -72,7 +80,7 @@ internal static class TeamsPanelUi
     /// <param name="header">Starts a section (the lab tab draws a card, the window a bold line).</param>
     /// <param name="hint">A small grey note.</param>
     /// <param name="lab">Extra test-bench buttons (spread players over the teams, place a Team Ward).</param>
-    public static void Draw(Action<string> header, Action<string> hint, bool lab)
+    public static void Draw(Action<string> header, Action<string> hint, bool lab, PanelTab? only = null, PrivateArea? wardTarget = null)
     {
         var me = Player.m_localPlayer;
         if (me == null)
@@ -91,6 +99,9 @@ internal static class TeamsPanelUi
             GUILayout.Label("The server has no teams yet (teams.json).", Rich);
             return;
         }
+
+        bool Show(PanelTab t) => only == null || only == t;
+        var players = Player.GetAllPlayers().Where(p => p != null).OrderBy(p => p != me).ThenBy(p => p.GetPlayerName()).ToList();
 
         // ---- spawn test (test bench) ---------------------------------------------------------------------
         if (lab)
@@ -111,8 +122,9 @@ internal static class TeamsPanelUi
         }
 
         // ---- players -----------------------------------------------------------------------------------
+        if (Show(PanelTab.Players))
+        {
         header("Players");
-        var players = Player.GetAllPlayers().Where(p => p != null).OrderBy(p => p != me).ThenBy(p => p.GetPlayerName()).ToList();
         foreach (var p in players)
         {
             var current = TeamsAPI.GetTeam(TeamsAPI.GetTeamId(p));
@@ -151,7 +163,11 @@ internal static class TeamsPanelUi
             GUILayout.EndHorizontal();
         }
 
+        }
+
         // ---- teams ---------------------------------------------------------------------------------------
+        if (Show(PanelTab.Teams))
+        {
         header("Teams");
         foreach (var t in teams)
         {
@@ -165,8 +181,8 @@ internal static class TeamsPanelUi
             Button("Clear", () => Cmd($"clearspawn {team.Id}"), GUILayout.Width(52f));
             GUI.enabled = true;
             var stones = team.SpawnStones;
-            GUI.enabled = team.HasSpawn;
-            Button(stones ? "Stones: on" : "Stones: off", () => Cmd($"spawnstones {team.Id} {(stones ? "off" : "on")}"));
+            GUI.enabled = team.HasSpawn && TeamsConfig.SpawnStonesExperimental;
+            Button(!TeamsConfig.SpawnStonesExperimental ? "Stones: off (experimental)" : stones ? "Stones: on" : "Stones: off", () => Cmd($"spawnstones {team.Id} {(stones ? "off" : "on")}"));
             GUI.enabled = true;
             Open.TryGetValue(team.Id, out var edit);
             Button(edit ? "Less" : "Edit", () => Open[team.Id] = !edit, GUILayout.Width(52f));
@@ -199,19 +215,28 @@ internal static class TeamsPanelUi
             }
             GUILayout.EndHorizontal();
         }
-        hint("\"Spawn here\" sets where this team respawns to the spot you stand on. \"Stones\" also places a copy of the start stones there.");
+        hint("\"Spawn here\" sets where this team respawns to the spot you stand on. Start stones are an experimental feature (off): placing them can leave seams in the terrain.");
+
+        }
 
         // ---- team ward ------------------------------------------------------------------------------------
+        if (Show(PanelTab.Ward))
+        {
         header("Team Ward");
-        var ward = TeamWard.Nearest(me.transform.position, 12f);
+        var ward = wardTarget ?? TeamWard.Nearest(me.transform.position, 12f);
         if (ward == null)
             GUILayout.Label("No Team Ward within 12 m. Build one from the Hammer's Misc tab (admins only).", Rich);
         else
             DrawWard(ward, teams, me);
         if (lab)
             Button("Place a Team Ward in front of me (test, as me)", () => TeamsLabTools.PlaceWard());
+        if (ward != null)
+            AdminPanel.DrawWardSections(ward, header);
+        }
 
         // ---- server ---------------------------------------------------------------------------------------
+        if (Show(PanelTab.Server))
+        {
         header("Server settings");
         GUILayout.BeginHorizontal();
         GUILayout.Label($"Who sets teams: <b>{TeamsConfig.AssignmentMode}</b>", Rich, GUILayout.Width(300f));
@@ -229,6 +254,7 @@ internal static class TeamsPanelUi
         Button(rules.Enabled ? "Turn off" : "Turn on", () => Cmd($"deathrules {(rules.Enabled ? "off" : "on")}"));
         GUILayout.EndHorizontal();
         hint("AdminOnly: only admins put players on teams (this panel or the console). PlayerChoice: players pick once with 'teams join'. AutoBalance: the server picks.");
+        }
     }
 }
 

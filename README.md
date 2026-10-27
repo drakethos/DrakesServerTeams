@@ -19,7 +19,7 @@ Part of DrakeMods.
 
 - **Teams** defined by the admin in `teams.json` (name, color, icon, glow color). Assigned by an admin, picked by players, or auto-balanced.
 - **Visuals:** names in the team color with the team icon above them (built-in shapes or your own PNG), a soft team glow, and team-marked graves.
-- **Spawn points** per team (members respawn there, or are moved there when they first join a team), and an opt-in copy of the start stones at a team's spawn.
+- **Spawn points** per team (members respawn there, or are moved there when they first join a team). An experimental, off-by-default option can also place a copy of the start stones at a spawn; it can leave terrain seams, so do not use it on a world you care about.
 - **Team Ward:** an obsidian guard stone, admin-placed, that glows in its team's color. Its team has access; others are kept out of building and chests (doors are a switch). Shift+E opens its settings.
 - **Death rules** (off by default): keep gear, drop coins or chosen items for the killer.
 - **Admin tools:** the `teams` console command and an in-game admin panel (F6).

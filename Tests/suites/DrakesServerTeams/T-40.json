@@ -45,7 +45,8 @@
       "values": {
         "1 Assignment/AssignmentMode": "AdminOnly",
         "1 Assignment/PlayersCanSwitchTeams": "false",
-        "1 Assignment/MoveToSpawnOnFirstTeam": "false"
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
       }
     },
     {

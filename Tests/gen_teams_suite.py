@@ -143,7 +143,7 @@ def xyz(p):
 def fresh_teams():
     """Known starting point: no stored members, no spawn points, no third team left over from another test."""
     return [H('setDeathRules', enabled=False), H('removeTeam', team='green'), H('clearSpawn', team='red'), H('clearSpawn', team='blue'), H('clearMembers'),
-            C({'1 Assignment/AssignmentMode': 'AdminOnly', '1 Assignment/PlayersCanSwitchTeams': 'false', '1 Assignment/MoveToSpawnOnFirstTeam': 'false'})]
+            C({'1 Assignment/AssignmentMode': 'AdminOnly', '1 Assignment/PlayersCanSwitchTeams': 'false', '1 Assignment/MoveToSpawnOnFirstTeam': 'false', '7 Experimental/SpawnStonesExperimental': 'false'})]
 
 
 def four_players():
@@ -545,26 +545,6 @@ T('T-35', 'colors by name or hex, icons by shape or by file', [
     H('deleteSampleIcon', expect=True, icon='sample-crest'),
 ])
 
-T('T-36', 'a team can have its own copy of the start stones (opt-in)', [
-    *fresh_teams(),
-    H('hasStartLocation', expect=True, label='the game has a StartTemple location to copy'),
-    H('adminCommand', contains='no spawn point yet', label='stones need a spawn point first', line='spawnstones red on'),
-    {'do': 'teleport', 'dz': 60},
-    wait(2.5),
-    H('adminCommand', contains='now spawns at', label='stand on open ground and set the spawn of red', line='setspawn red'),
-    H('stonesNear', expect=False, label='no stones there yet', team='red'),
-    H('adminCommand', contains='start stones placed', label='teams spawnstones red on', line='spawnstones red on'),
-    wait(1.0),
-    H('teamSpawn', contains='', label='asked for', team='red'),
-    H('stonesPlacedAt', contains='', label='the game put them at'),
-    H('stonesNear', expect=True, label='a start location now stands at the spawn point of red', team='red'),
-    H('ensureStones', expect='exists', label='asking again places nothing more', team='red'),
-    H('adminCommand', contains='no new start stones', label='teams spawnstones red off', line='spawnstones red off'),
-    H('stonesNear', expect=True, label='stones already placed stay in the world', team='red'),
-    H('adminCommand', contains='Usage', label='a bad word is refused', line='spawnstones red maybe'),
-    H('adminCommand', contains='no longer has a spawn point', label='clean up the spawn point', line='clearspawn red'),
-])
-
 def ward_setup():
     """Alice (red, admin) puts down a Team Ward; Bjornita (blue), Bob (red) and Amy (no team) are in the world."""
     return [*fresh_teams(), *four_players(),
@@ -686,6 +666,46 @@ T('T-48', 'first-join team picker: offered once, the server remembers, admins ca
     H('helloOffer', expect=False, label='AutoBalance never shows the picker', player='Amy'),
     H('teamOf', expect='red', label='Amy was auto-assigned the smallest team', player='Amy'),
     H('setMode', expect='AdminOnly', mode='AdminOnly'),
+])
+
+T('T-49', 'with RenameIt and DrakeModsLibs installed, Shift+E on a Team Ward is ours, not the rename window', [
+    *ward_setup(),
+    H('libsClaim', expect='DrakesServerTeams', label='Libs reports the Team Ward as claimed', ward='ward'),
+    H('closeWardPanel', expect=False),
+    {'do': 'lookAt', 'target': 'ward'},
+    {'do': 'interact', 'target': 'ward', 'asPlayer': True, 'alt': True},
+    wait(0.5),
+    H('wardPanelOpen', expect=True, label='the Team Ward settings window opened (Shift+E, through the real interact path)'),
+    H('renameWindowOpen', expect='no', label='the RenameIt rename window did not'),
+    H('closeWardPanel', expect=False),
+])
+
+T('T-50', 'start stones are off by default (experimental), the panel has tabs, and a panel blocks the game input', [
+    *fresh_teams(), *four_players(),
+    # start stones: experimental, off
+    {'do': 'teleport', 'dz': 60}, wait(2.0),
+    H('adminCommand', contains='now spawns at', label='set the red spawn by coordinates', line='setspawn red 20 20'),
+    H('adminCommand', contains='experimental', label='teams spawnstones refuses while the setting is off', line='spawnstones red on'),
+    H('ensureStones', contains='disabled', label='and nothing is placed', team='red'),
+    H('stonesNear', expect=False, label='no start location appeared', team='red'),
+    H('adminCommand', contains='no longer has a spawn point', line='clearspawn red'),
+    # panel tabs
+    H('panelTab', expect='closed', label='the panel starts closed'),
+    H('openPanel', expect=True, open=True),
+    H('panelTab', expect='Players', label='it opens on the Players tab'),
+    H('openPanel', expect=False, open=False),
+    # input: a click on a panel must not also be an attack
+    H('gameTakesInput', expect='yes', label='the game reads attack and look input normally'),
+    H('openPanel', expect=True, open=True),
+    H('gameTakesInput', expect='no', label='with the panel open it does not (no punching, no camera)'),
+    H('openPanel', expect=False, open=False),
+    H('gameTakesInput', expect='yes', label='and it comes back when the panel closes'),
+    # Shift+E opens the same panel on the Ward tab
+    *ward_setup(),
+    H('wardInteract', expect=True, label='Shift+E opens the admin panel', ward='ward', alt=True),
+    H('panelTab', expect='Ward', label='on the Ward tab'),
+    H('gameTakesInput', expect='no', label='and it also blocks the game input'),
+    H('closeWardPanel', expect=False),
 ])
 
 suite = {

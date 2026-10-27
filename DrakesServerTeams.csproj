@@ -121,8 +121,8 @@
     <Compile Include="Visuals\TeamGrave.cs" />
     <Compile Include="UI\TeamsPanel.cs" />
     <Compile Include="UI\AdminPanel.cs" />
-    <Compile Include="UI\WardPanel.cs" />
     <Compile Include="UI\TeamPicker.cs" />
+    <Compile Include="UI\LibsBridge.cs" />
     <Compile Include="Visuals\TeamWardVisual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Testing\TeamsTestHooks.cs" Condition="'$(Configuration)' == 'Debug'" />

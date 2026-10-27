@@ -846,16 +846,16 @@ internal static class TeamsTestHooks
     static bool WardInteract(GameObject? ward, Dictionary<string, object?> args)
     {
         var area = AreaOf(ward);
-        WardPanel.Close();
+        AdminPanel.Close();
         ((Interactable)area).Interact(P, false, B(args, "alt", false));
-        return WardPanel.IsOpen;
+        return AdminPanel.IsOpen && AdminPanel.Tab == PanelTab.Ward;
     }
 
     [TestHook("teams.closeWardPanel")]
     static bool CloseWardPanel()
     {
-        WardPanel.Close();
-        return WardPanel.IsOpen;
+        AdminPanel.Close();
+        return AdminPanel.IsOpen;
     }
 
     /// <summary>The ward's hover text with tags stripped.</summary>
@@ -887,5 +887,63 @@ internal static class TeamsTestHooks
     {
         TeamsConfig.SetAssignmentMode(Enum.TryParse<AssignmentMode>(S(args, "mode"), true, out var m) ? m : AssignmentMode.AdminOnly);
         return TeamsConfig.AssignmentMode.ToString();
+    }
+
+    /// <summary>Did the Team Ward register with DrakeModsLibs, and does Libs report this ward as claimed?</summary>
+    [TestHook("teams.libsClaim")]
+    static string LibsClaim(GameObject? ward)
+    {
+        if (!LibsBridge.Registered)
+            return "not registered (no Libs, or an old one)";
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (asm.GetName().Name != "DrakeModsLibs")
+                continue;
+            var m = asm.GetType("DrakeModsLibs.API.PieceInteractionClaims")?.GetMethod("ClaimedBy", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            var piece = AreaOf(ward).GetComponent<Piece>();
+            return (string?)m?.Invoke(null, new object?[] { piece }) ?? "not claimed";
+        }
+        return "no Libs";
+    }
+
+    /// <summary>Is RenameIt's piece rename window open right now? ("yes", "no", or "RenameIt not loaded")</summary>
+    [TestHook("teams.renameWindowOpen")]
+    static string RenameWindowOpen()
+    {
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (asm.GetName().Name.IndexOf("renameit", StringComparison.OrdinalIgnoreCase) < 0)
+                continue;
+            foreach (var t in asm.GetTypes())
+            {
+                if (t.Name != "PieceRename")
+                    continue;
+                var prop = t.GetProperty("PromptOpen", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                if (prop?.GetValue(null) is bool open)
+                    return open ? "yes" : "no";
+            }
+        }
+        return "RenameIt not loaded";
+    }
+
+    /// <summary>Is the Team Ward settings window open?</summary>
+    [TestHook("teams.wardPanelOpen")]
+    static bool WardPanelIsOpen() => AdminPanel.IsOpen && AdminPanel.Tab == PanelTab.Ward;
+
+    /// <summary>The panel tab showing, or "closed".</summary>
+    [TestHook("teams.panelTab")]
+    static string PanelTabNow() => AdminPanel.IsOpen ? AdminPanel.Tab.ToString() : "closed";
+
+    /// <summary>Does the game still read attack and look input right now? (PlayerController.TakeInput, the check a click on a panel must fail.)</summary>
+    [TestHook("teams.gameTakesInput")]
+    static string GameTakesInput()
+    {
+        var pc = P.GetComponent<PlayerController>() ?? UnityEngine.Object.FindFirstObjectByType<PlayerController>();
+        var m = HarmonyLib.AccessTools.Method(typeof(PlayerController), "TakeInput");
+        if (pc == null || m == null)
+            return "no PlayerController.TakeInput";
+        var ps = m.GetParameters();
+        var result = m.Invoke(pc, ps.Length == 0 ? null : new object[] { true });
+        return result is bool b ? (b ? "yes" : "no") : "?";
     }
 }

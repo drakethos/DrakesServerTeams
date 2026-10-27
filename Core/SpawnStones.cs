@@ -52,7 +52,7 @@ public static class SpawnStones
     /// <summary>Server: place stones for every team that wants them and does not have them yet. Cheap when nothing is pending.</summary>
     public static void Tick(ManualLogSource log)
     {
-        if (Time.unscaledTime < _next || !TeamsNet.IsAuthority || ZoneSystem.instance == null)
+        if (!TeamsConfig.SpawnStonesExperimental || Time.unscaledTime < _next || !TeamsNet.IsAuthority || ZoneSystem.instance == null)
             return;
         _next = Time.unscaledTime + TickSeconds;
         _log = log;
@@ -69,6 +69,8 @@ public static class SpawnStones
     /// </summary>
     public static string Ensure(TeamDefinition team)
     {
+        if (!TeamsConfig.SpawnStonesExperimental)
+            return "disabled: start stones are experimental and can leave seams in the terrain (setting 7 Experimental/SpawnStonesExperimental is off)";
         if (!team.HasSpawn)
             return "no spawn point";
         var zs = ZoneSystem.instance;

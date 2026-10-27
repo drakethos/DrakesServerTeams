@@ -112,20 +112,6 @@ T('V-02', 'graves of four teams', [
     shot('teams-grave-closeup-dusk'),
 ], 'Four graves in a row, one per team: team-colored light, floating icon, colored name text. Day, night and a close-up.')
 
-T('V-03', 'a team with its own copy of the start stones', [
-    *setup_teams(), H('setTime', time=DAY),
-    *to_clearing(),
-    {'do': 'teleport', 'dz': 18}, wait(2.0),
-    H('adminCommand', contains='now spawns at', label='stand where the team should spawn and set it', line='setspawn ember'),
-    H('adminCommand', contains='start stones', label='switch the stones on for the team', line='spawnstones ember on'),
-    wait(2.5),
-    H('viewTeamSpawn', contains='', team='ember', dist=24), wait(3.0),
-    shot('teams-spawn-stones-day'),
-    H('setTime', time=NIGHT), wait(1.0),
-    shot('teams-spawn-stones-night'),
-    H('adminCommand', contains='no longer has a spawn point', label='clean up', line='clearspawn ember'),
-], 'A copy of the vanilla start stones at the Ember spawn point. The original temple stays the true spawn for everyone else.')
-
 T('V-04', 'the admin panel and the DrakesTestLab Teams tab', [
     *setup_teams(), H('setTime', time=DAY),
     *to_clearing(),
