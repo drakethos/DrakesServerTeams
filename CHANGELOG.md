@@ -1,5 +1,13 @@
 # DrakesServerTeams
 
+## Unreleased
+
+### Fixed
+
+- Packaging only: the Hexium/Thunderstore zip now puts the DLL and every data folder under `plugins/`, so Gale and r2modman
+  keep the folder structure (they flatten anything outside `plugins/`). A CI guard (`check-gale-layout.py`) fails the build
+  if that ever regresses. No code or behaviour change for players.
+
 ## 0.1.0-beta.3
 - **Start stones are now experimental and OFF** (`7 Experimental/SpawnStonesExperimental`). The game places a copy of the start location with a mid-game terrain edit, which can leave seams and height jumps between zones, and it is saved in the world. `teams spawnstones` explains this and does nothing until the setting is on. Do not enable it on a world you care about.
 - **The admin panel has tabs** (Players, Teams, Ward, Server). Shift+E on a Team Ward opens the same panel on the Ward tab for that ward (the separate ward window is gone).
