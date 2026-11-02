@@ -6,8 +6,8 @@ Part of DrakeMods.
 **Teams** are server-wide sides (this mod). **Guilds** are player-formed (Smoothbrain Guilds). **Groups** are parties (Smoothbrain Groups). This mod does not replace or patch either.
 
 > [!WARNING]
-> ### ⚠️ 0.1.0 beta: brand new, early preview, not thoroughly tested
-> This is the **first public build** of DrakesServerTeams. It has only been tested in a single test world with one real player and simulated players, never on a busy server. Expect bugs, rough edges and changes between betas.
+> ### ⚠️ 0.2.0: still an early version, tested on a real dedicated server with two real players, never on a busy one
+> 0.2.0 has no code change from the last beta. What changed is how it was tested: on a real dedicated server with two real players (joining teams, and reading each other's team), not only in one test world with simulated players. Auto-balance, piece-team stamps, the Team Ward against a real second player, spawn points and death rules have not yet been checked that way. Expect bugs and rough edges.
 >
 > **Use it at your own risk.**
 > - **Back up your world and your characters before installing** (the `worlds_local` folder and your character files), and do not try it first on a world you cannot afford to lose.

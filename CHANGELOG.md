@@ -1,5 +1,14 @@
 # DrakesServerTeams
 
+## 0.2.0
+
+**No code or gameplay change from 0.1.0-beta.4.** This release is the first one tested on a real dedicated server with two real players (a Game Pass client and a Steam client, joined through PlayFab crossplay) instead of one test world with simulated players.
+
+- **Checked with two real players on a dedicated server:** the mod loads and runs on the server with Jotunn, DrakeModsLibs, LockSmith and RenameIt; two real players join different teams with `teams join` (`AssignmentMode = PlayerChoice`, `FirstJoinPicker` off) and the server logs each change; the team the server publishes on a player is readable by the other real client; piece teams are switched on when LockSmith is installed.
+- **Not yet checked on a real server (still the early-preview caveat):** auto-balance and admin-only assignment with real players, piece-team stamps and forged stamps, the Team Ward against a real second player, spawn points and respawning, graves, and death rules. These are covered by the mod's own test suites with simulated players.
+- The test suites for two real players live in the repository under `Tests/suites/DrakesServerTeams-Player2` (not part of the package). They need DrakesTestLab 0.4.1 or newer.
+- Server owners: the mod's settings file is `com.drakemods.serverteams.cfg`; with the Docker `lloesche/valheim-server` image it sits in `config/bepinex/` (not `config/bepinex/config/`). Settings marked synced come from the server.
+
 ## 0.1.0-beta.4
 
 - **Packaging fix:** the zip now ships the DLL under `plugins/` so Gale and r2modman keep the folder layout (they flatten anything outside `plugins/`). A build guard (`check-gale-layout.py`) fails the release if that regresses. No code or gameplay change.
