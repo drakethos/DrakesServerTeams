@@ -1,0 +1,21 @@
+{
+  "name": "A-03 an admin can take a player's team away; the player can then choose again",
+  "description": "Player 1 is made an admin, joins red, is forgotten by the server (no team), loses its admin right and picks blue.",
+  "steps": [
+    "freshServer()",
+    { "do": "server", "cmd": "admin.add", "args": { "who": "me" } },
+    { "do": "wait", "seconds": 3 },
+    { "do": "console", "command": "teams assign me red" },
+    { "do": "wait", "seconds": 4 },
+    { "do": "hook", "name": "teams.myTeam", "expect": "red", "label": "the admin put itself on red" },
+    { "do": "console", "command": "teams forget me" },
+    { "do": "wait", "seconds": 4 },
+    { "do": "hook", "name": "teams.myTeam", "expect": "", "label": "forgotten: no team" },
+    { "do": "server", "cmd": "hook.call", "args": { "name": "teams.memberCount", "args": { "team": "red" } }, "expect": "0", "label": "and the server holds nobody on red" },
+    { "do": "server", "cmd": "admin.remove", "args": { "who": "me" } },
+    { "do": "wait", "seconds": 3 },
+    { "do": "console", "command": "teams join blue" },
+    { "do": "wait", "seconds": 4 },
+    { "do": "hook", "name": "teams.myTeam", "expect": "blue", "label": "no longer an admin, it still picks a team under PlayerChoice" }
+  ]
+}

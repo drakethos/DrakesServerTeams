@@ -1,0 +1,26 @@
+// DrakesServerTeams and WHO MAY DO WHAT, with the server's own conditions changed during the test (DrakesTestLab server connect mode,
+// Player 1 plus the server; no Player 2 needed). The server step changes the admin list, the assignment mode and the stored members, the
+// way editing adminlist.txt and the settings file would, live, and the tests check what a player can and cannot do each time.
+// Needs DrakesTestLabServer with Control.Enabled on the dedicated server, and Teams built as Debug on the server (for its hooks).
+// The last test (Z-99) always resets the server, whatever the earlier tests did. Hand-written.
+{
+  "name": "DrakesServerTeams-Server",
+  "description": "Admin rights and assignment mode, switched on the server while a player is connected, and what Teams allows each time.",
+  "requireMods": [
+    { "guid": "com.drakemods.serverteams", "minVersion": "0.0.1" },
+    { "guid": "com.drakemods.testlab", "minVersion": "0.4.1" }
+  ],
+  "setup": { "god": 1 },
+  "resetBetweenTests": false,
+  "functions": {
+    "freshServer": {
+      "params": [],
+      "actions": [
+        { "do": "server", "cmd": "admin.remove", "args": { "who": "me" } },
+        { "do": "server", "cmd": "hook.call", "args": { "name": "teams.clearMembers" } },
+        { "do": "server", "cmd": "config.set", "args": { "guid": "com.drakemods.serverteams", "section": "1 Assignment", "key": "AssignmentMode", "value": "PlayerChoice", "force": true } },
+        { "do": "wait", "seconds": 4 }
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Z-99 cleanup: no admin, no stored members, PlayerChoice",
+  "description": "Always the last test. Puts the server back whatever the earlier tests did.",
+  "steps": [
+    "freshServer()",
+    { "do": "server", "cmd": "admin.is", "args": { "who": "me" }, "expect": "False", "label": "Player 1 is not an admin" },
+    { "do": "server", "cmd": "hook.call", "args": { "name": "teams.memberCount", "args": { "team": "red" } }, "expect": "0", "label": "no members left" }
+  ]
+}

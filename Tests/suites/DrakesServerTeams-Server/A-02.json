@@ -1,0 +1,16 @@
+{
+  "name": "A-02 the assignment mode is switched on the server and enforced",
+  "description": "With AdminOnly a player cannot pick a team. The server switches to PlayerChoice and the same player can. (Finding: Teams' admin-only settings are not re-sent to a connected client when the server changes them; the server enforces them regardless.)",
+  "steps": [
+    "freshServer()",
+    { "do": "server", "cmd": "config.set", "args": { "guid": "com.drakemods.serverteams", "section": "1 Assignment", "key": "AssignmentMode", "value": "AdminOnly", "force": true } },
+    { "do": "server", "cmd": "config.get", "args": { "guid": "com.drakemods.serverteams", "section": "1 Assignment", "key": "AssignmentMode" }, "expect": "AdminOnly", "label": "the server is on AdminOnly" },
+    { "do": "console", "command": "teams join red" },
+    { "do": "wait", "seconds": 4 },
+    { "do": "hook", "name": "teams.myTeam", "expect": "", "label": "AdminOnly: a player cannot pick a team" },
+    { "do": "server", "cmd": "config.set", "args": { "guid": "com.drakemods.serverteams", "section": "1 Assignment", "key": "AssignmentMode", "value": "PlayerChoice", "force": true } },
+    { "do": "console", "command": "teams join red" },
+    { "do": "wait", "seconds": 4 },
+    { "do": "hook", "name": "teams.myTeam", "expect": "red", "label": "PlayerChoice: the same player can pick" }
+  ]
+}
