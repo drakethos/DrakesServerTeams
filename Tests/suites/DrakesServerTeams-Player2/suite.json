@@ -1,0 +1,16 @@
+// DrakesServerTeams with TWO REAL players (DrakesTestLab server connect mode). Player 1 (named Bjorn) runs the tests; Player 2
+// (a second lab client, character name set to Bjornita in its lab config: [Save] CharacterDisplayName) only does what Player 1 sends.
+// The server runs AssignmentMode = PlayerChoice (FirstJoinPicker off) with the default red / blue teams. Each player joins a team
+// with the "teams join" console command, so the result does not depend on who joined first or on characters stored by earlier runs.
+// Needs DrakesTestLabServer on the server and the same Teams build everywhere. Hand-written.
+{
+  "name": "DrakesServerTeams-Player2",
+  "description": "Two real players join different teams with 'teams join'; each client then reads the other's published team.",
+  "requireMods": [
+    { "guid": "com.drakemods.serverteams", "minVersion": "0.0.1" },
+    { "guid": "com.drakemods.testlab", "minVersion": "0.4.1" }
+  ],
+  "setup": { "god": 1 },
+  // the server owns the world: never reset or reload it between tests
+  "resetBetweenTests": false
+}

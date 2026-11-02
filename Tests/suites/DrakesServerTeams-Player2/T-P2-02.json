@@ -1,0 +1,10 @@
+{
+  "name": "T-P2-02 each client reads the other's team",
+  "description": "Player 2 reads its own team and sees Player 1 on the other team: the team the server publishes on a player is readable by the other client.",
+  "steps": [
+    { "do": "ping", "on": "player2", "connectTimeout": 120 },
+    { "do": "hook", "on": "player2", "name": "teams.myTeam", "expect": "blue", "label": "Player 2 is on blue" },
+    { "do": "hook", "on": "player2", "name": "teams.teamOf", "args": { "player": "Bjorn" }, "expect": "red", "label": "Player 2 sees Player 1 on red" },
+    { "do": "hook", "on": "player2", "name": "teams.sameTeam", "args": { "a": "me", "b": "Bjorn" }, "expect": false, "label": "Player 2 sees Player 1 on a different team" }
+  ]
+}

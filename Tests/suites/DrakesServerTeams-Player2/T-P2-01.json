@@ -1,0 +1,13 @@
+{
+  "name": "T-P2-01 two real players join different teams",
+  "description": "Player 1 joins red and Player 2 joins blue with the 'teams join' command. Player 1 reads its own team and sees Player 2 on the other team.",
+  "steps": [
+    { "do": "ping", "on": "player2", "connectTimeout": 120 },
+    { "do": "console", "command": "teams join red" },
+    { "do": "console", "on": "player2", "command": "teams join blue" },
+    { "do": "wait", "seconds": 4 },
+    { "do": "hook", "name": "teams.myTeam", "expect": "red", "label": "Player 1 is on red" },
+    { "do": "hook", "name": "teams.teamOf", "args": { "player": "Bjornita" }, "expect": "blue", "label": "Player 1 sees Player 2 on blue" },
+    { "do": "hook", "name": "teams.sameTeam", "args": { "a": "me", "b": "Bjornita" }, "expect": false, "label": "the two real players are on different teams" }
+  ]
+}
