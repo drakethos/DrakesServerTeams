@@ -8,7 +8,7 @@
   "description": "Admin rights and assignment mode, switched on the server while a player is connected, and what Teams allows each time.",
   "requireMods": [
     { "guid": "com.drakemods.serverteams", "minVersion": "0.0.1" },
-    { "guid": "com.drakemods.testlab", "minVersion": "0.4.1" }
+    { "guid": "com.drakemods.testlab", "minVersion": "0.4.2" }
   ],
   "setup": { "god": 1 },
   "resetBetweenTests": false,
