@@ -42,7 +42,8 @@ static class WardLocalAccessPatch
 }
 
 /// <summary>
-/// E on a Team Ward shows who it belongs to and what it protects. Shift+E opens its settings window (admins; anyone else is told why not).
+/// E on a Team Ward shows who it belongs to and what it protects. Shift+E opens the shared Lock menu when LockSmith
+/// is installed (team-managed, admins can change it). Otherwise Shift+E still opens this mod's admin window.
 /// The vanilla ward would toggle itself or ask for a permitted list, which does not apply here.
 /// </summary>
 [HarmonyPatch(typeof(PrivateArea), nameof(PrivateArea.Interact))]
@@ -57,6 +58,8 @@ static class WardInteractPatch
             return false; // holding the key repeats; act once
         if (__2)
         {
+            if (SharedWardMenu.TryOpen(__instance))
+                return false;
             if (TeamWard.LocalIsAdmin())
                 AdminPanel.OpenWard(__instance);
             else
@@ -81,7 +84,7 @@ static class WardHoverPatch
         var own = Player.m_localPlayer != null && team != null
                   && string.Equals(TeamsAPI.GetTeamId(Player.m_localPlayer), team.Id, StringComparison.OrdinalIgnoreCase);
         __result = $"{TeamWard.Display}\n{line}\n{(own || TeamWard.LocalIsAdmin() ? "your team's ward" : "protected")}"
-                   + (TeamWard.LocalIsAdmin() ? "\n[<color=yellow><b>Shift+E</b></color>] settings" : "");
+                   + "\n[<color=yellow><b>Shift+E</b></color>] " + (TeamWard.LocalIsAdmin() ? "settings" : "look");
     }
 }
 
@@ -169,5 +172,78 @@ static class WardPlacePatch
             return true;
         TeamsNet.Say("Only admins can place a Team Ward.");
         return false;
+    }
+}
+
+/// <summary>
+/// LockSmith's Team Ward menu, found by reflection so this mod still builds without it. Missing means Shift+E keeps
+/// the admin window.
+/// </summary>
+static class SharedWardMenu
+{
+    static bool _looked;
+    static MethodInfo? _tryOpen;
+    static MethodInfo? _close;
+    static PropertyInfo? _open;
+    static PropertyInfo? _locked;
+
+    public static bool TryOpen(PrivateArea area)
+    {
+        Look();
+        if (_tryOpen == null || !area || Player.m_localPlayer == null)
+            return false;
+        try
+        {
+            return _tryOpen.Invoke(null, new object[] { area, Player.m_localPlayer }) is true;
+        }
+        catch (Exception ex)
+        {
+            TeamsNet.Warn($"Team Ward shared menu: {ex.Message}");
+            return false;
+        }
+    }
+
+    public static bool IsOpen => Flag(_open);
+
+    public static bool ControlsLocked => Flag(_locked);
+
+    public static void Close()
+    {
+        if (!IsOpen)
+            return;
+        Look();
+        try
+        {
+            _close?.Invoke(null, null);
+        }
+        catch (Exception ex)
+        {
+            TeamsNet.Warn($"Team Ward shared menu close: {ex.Message}");
+        }
+    }
+
+    static bool Flag(PropertyInfo? prop)
+    {
+        Look();
+        try
+        {
+            return prop?.GetValue(null) is true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    static void Look()
+    {
+        if (_looked)
+            return;
+        _looked = true;
+        var menu = AccessTools.TypeByName("LockSmith.UI.PieceAccessMenu");
+        _tryOpen = menu?.GetMethod("TryOpenTeamWard", BindingFlags.Public | BindingFlags.Static);
+        _close = menu?.GetMethod("Close", BindingFlags.Public | BindingFlags.Static);
+        _open = menu?.GetProperty("TeamWardMenuOpen", BindingFlags.Public | BindingFlags.Static);
+        _locked = menu?.GetProperty("TeamWardControlsLocked", BindingFlags.Public | BindingFlags.Static);
     }
 }

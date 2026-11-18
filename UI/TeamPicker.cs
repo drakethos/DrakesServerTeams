@@ -1,86 +1,89 @@
+using DrakeModsLibs.UI.Toolkit;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace DrakesServerTeams;
 
 /// <summary>
-/// The first-join team picker: a small window listing the joinable teams. The server decides when to show it (PlayerChoice, a character with
-/// no team that has not been offered it yet) and remembers that it did; "teams pick" opens it again. Joining sends the same request as
-/// "teams join", so the server still applies every rule.
+/// The first-join team picker: a window (Libs <see cref="UkWindow"/>, the DrakeMods look) listing the joinable teams. The server decides when to
+/// show it (PlayerChoice, a character with no team that has not been offered it yet) and remembers that it did; "teams pick" opens it again.
+/// Joining sends the same request as "teams join", so the server still applies every rule.
 /// </summary>
 public sealed class TeamPicker : MonoBehaviour
 {
-    const int WindowId = 0x7EA7;
-    static bool _open;
-    Rect _window;
-    GUIStyle? _solid;
-    GUIStyle? _title;
-    GUIStyle? _text;
+    static UkWindow? _win;
+    static VisualElement? _list;
+    static string _key = "";
 
-    public static bool IsOpen => _open;
+    public static bool IsOpen => _win != null && _win.IsOpen;
 
-    public static void Open() => _open = true;
-
-    public static void Close() => _open = false;
-
-    void Update()
+    public static void Open()
     {
-        if (!_open)
-            return;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        EnsureWindow();
+        Rebuild();
+        _win!.Open();
     }
 
-    void OnGUI()
+    public static void Close() => _win?.Close();
+
+    static void EnsureWindow()
     {
-        if (!_open || Player.m_localPlayer == null)
+        if (_win != null)
             return;
-        _solid ??= AdminPanel.MakeWindowStyle();
-        _title ??= new GUIStyle(GUI.skin.label) { richText = true, fontStyle = FontStyle.Bold, fontSize = 18, alignment = TextAnchor.MiddleCenter };
-        _text ??= new GUIStyle(GUI.skin.label) { richText = true, wordWrap = true, fontSize = 13, alignment = TextAnchor.MiddleCenter };
-        var width = 460f;
-        if (_window.width < 1f)
-            _window = new Rect((Screen.width - width) / 2f, Screen.height * 0.22f, width, 100f);
-        var old = GUI.contentColor;
-        GUI.contentColor = Color.white;
-        _window = GUILayout.Window(WindowId, _window, Draw, "", _solid, GUILayout.Width(width));
-        GUI.contentColor = old;
+        _win = new UkWindow("drakes_team_picker", 720f);
+        _win.SetHeader("Choose your team");
+        var text = UkControls.Text("This server has teams. Pick the side you want to play on. Only an admin can move you afterwards.", 17, UkTheme.TextBody);
+        text.style.marginBottom = 14;
+        _win.Body.Add(text);
+        _list = new VisualElement().Column();
+        _win.Body.Add(_list);
+        _win.ShowFooter(true);
+        _win.Footer.Add(UkControls.Text("Type 'teams pick' to open this again.", 14, UkTheme.TextMuted, wrap: false));
+        _win.Footer.Add(UkControls.Spacer());
+        _win.Footer.Add(UkControls.MakeButton("Later", () => _win.Close(), UkButtonKind.Secondary));
+        _win.Body.schedule.Execute(() =>
+        {
+            if (IsOpen && Key() != _key)
+                Rebuild();
+        }).Every(500);
     }
 
-    void Draw(int id)
+    static string Key()
     {
-        GUILayout.Label("Choose your team", _title);
-        GUILayout.Space(4f);
-        GUILayout.Label("This server has teams. Pick the side you want to play on. Only an admin can move you afterwards.", _text);
-        GUILayout.Space(10f);
+        var sb = new System.Text.StringBuilder();
+        foreach (var t in TeamsClientState.Teams)
+            sb.Append(t.Id).Append(t.DisplayName).Append(t.Color).Append(t.Joinable).Append(t.Logo).Append(t.Icon).Append(';');
+        return sb.ToString();
+    }
+
+    static void Rebuild()
+    {
+        _key = Key();
+        _list!.Clear();
         var any = false;
         foreach (var team in TeamsClientState.Teams)
         {
             if (!team.Joinable)
                 continue;
             any = true;
-            GUILayout.BeginHorizontal();
-            var icon = TeamIcons.Get(team.Icon);
-            var tint = TeamIcons.IsTinted(team.Icon) ? TeamIcons.ParseColor(team.Color) : Color.white;
-            var rect = GUILayoutUtility.GetRect(34f, 34f, GUILayout.Width(34f), GUILayout.Height(34f));
-            var oldColor = GUI.color;
-            GUI.color = tint;
-            GUI.DrawTexture(rect, icon.texture, ScaleMode.ScaleToFit, true);
-            GUI.color = oldColor;
-            var id2 = team.Id;
-            if (GUILayout.Button($"<b><color={team.Color}>\u25A0</color> {team.DisplayName}</b>", GUILayout.Height(34f)))
-                TeamsNet.RequestChoose(id2);
-            GUILayout.EndHorizontal();
-            GUILayout.Space(4f);
+            var id = team.Id;
+            var row = new VisualElement().Row();
+            row.style.marginBottom = 10;
+            var sprite = TeamLogos.GetSprite(team, out var tinted);
+            var icon = new VisualElement { pickingMode = PickingMode.Ignore }.Size(60, 60).Fixed();
+            icon.style.backgroundImage = new StyleBackground(sprite);
+            icon.style.unityBackgroundImageTintColor = tinted ? TeamIcons.ParseColor(team.Color) : Color.white;
+            icon.style.marginRight = 14;
+            row.Add(icon);
+            var button = UkControls.MakeButton($"<color={team.Color}>■</color> {team.DisplayName}", () => TeamsNet.RequestChoose(id), UkButtonKind.Secondary);
+            button.enableRichText = true;
+            button.style.height = 60;
+            button.style.fontSize = 22;
+            button.style.flexGrow = 1;
+            row.Add(button);
+            _list.Add(row);
         }
         if (!any)
-            GUILayout.Label("No team can be joined right now. Ask an admin.", _text);
-        GUILayout.Space(8f);
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        if (GUILayout.Button("Later (type 'teams pick' to open this again)", GUILayout.Width(300f)))
-            _open = false;
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-        GUI.DragWindow(new Rect(0f, 0f, 10000f, 24f));
+            _list.Add(UkControls.Text("No team can be joined right now. Ask an admin.", 17, UkTheme.TextMuted));
     }
 }

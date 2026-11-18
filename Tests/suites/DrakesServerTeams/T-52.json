@@ -1,0 +1,316 @@
+{
+  "name": "T-52 team banners and flags: pieces, models, stamp and cloth picture",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerPieces",
+      "expect": 3,
+      "label": "hanging banner, standing banner and flag are Hammer pieces"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerPixel",
+      "args": {
+        "team": "none",
+        "shape": "tall",
+        "x": 0.5,
+        "y": 0.2
+      },
+      "expect": "256x512|#8C8C8C",
+      "label": "no team: a grey tall cloth"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerPixel",
+      "args": {
+        "team": "none",
+        "shape": "wide",
+        "x": 0.5,
+        "y": 0.05
+      },
+      "expect": "384x256|#8C8C8C",
+      "label": "no team: a grey wide cloth"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setlogo red shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0"
+      },
+      "contains": "new logo",
+      "label": "red gets a white star logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerPixel",
+      "args": {
+        "team": "red",
+        "shape": "tall",
+        "x": 0.5,
+        "y": 0.66
+      },
+      "expect": "256x512|#FFFFFF",
+      "label": "the logo sits in the middle of the tall cloth"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerPixel",
+      "args": {
+        "team": "red",
+        "shape": "wide",
+        "x": 0.46,
+        "y": 0.5
+      },
+      "expect": "384x256|#FFFFFF",
+      "label": "and in the middle of the wide cloth"
+    },
+    {
+      "do": "hook",
+      "name": "teams.usePieceTeams",
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice is on red"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamBannerHanging",
+      "dz": 3,
+      "dx": -4,
+      "as": "hang"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamBannerStanding",
+      "dz": 3,
+      "as": "stand"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamFlag",
+      "dz": 3,
+      "dx": 4,
+      "as": "flag"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.pieceTeam",
+      "args": {
+        "target": "hang"
+      },
+      "expect": "red",
+      "label": "the server stamped the hanging banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.pieceTeam",
+      "args": {
+        "target": "stand"
+      },
+      "expect": "red",
+      "label": "the standing banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.pieceTeam",
+      "args": {
+        "target": "flag"
+      },
+      "expect": "red",
+      "label": "and the flag"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerLook",
+      "args": {
+        "target": "hang"
+      },
+      "contains": "red|1|",
+      "label": "the hanging banner shows red with its cloth painted"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerLook",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "red|1|",
+      "label": "the standing banner too"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerLook",
+      "args": {
+        "target": "flag"
+      },
+      "contains": "red|1|",
+      "label": "and the flag"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "blue"
+      },
+      "expect": "blue",
+      "label": "Bob is on blue"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamBannerStanding",
+      "dz": 6,
+      "as": "other"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.pieceTeam",
+      "args": {
+        "target": "other"
+      },
+      "expect": "blue",
+      "label": "a banner Bob builds is blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerLook",
+      "args": {
+        "target": "other"
+      },
+      "contains": "blue|1|",
+      "label": "and looks blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerRenderers",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "model",
+      "label": "renderers on a placed standing banner (listed in the log)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.bannerShaders",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "TeamCloth",
+      "label": "every banner material has a supported shader (the list is in the log)"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 9,
+      "as": "wardm"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardModel",
+      "args": {
+        "ward": "wardm"
+      },
+      "expect": "model|shards 4|halos 6|runes 12",
+      "label": "the Team Ward wears the Blender model: 4 crystals, 6 diamonds, 12 rune segments"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": "auto"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

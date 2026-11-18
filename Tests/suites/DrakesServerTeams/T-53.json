@@ -1,0 +1,223 @@
+{
+  "name": "T-53 Team Ward on and off, and the capture sweep on the rune ring",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice is on red"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 6,
+      "as": "w"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardState",
+      "args": {
+        "ward": "w"
+      },
+      "expect": "on|open 1.00|halos 6|captured 0/12|capture 0.00",
+      "label": "a new ward is on: crystals out, six diamonds, no capture"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardSet",
+      "args": {
+        "ward": "w",
+        "power": false
+      },
+      "contains": "power off",
+      "label": "switch it off"
+    },
+    {
+      "do": "wait",
+      "seconds": 2.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardState",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "off|open 0.00|halos 0|",
+      "label": "off: the crystals have folded in and the diamonds are gone"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardSet",
+      "args": {
+        "ward": "w",
+        "power": true
+      },
+      "contains": "power on",
+      "label": "switch it on again"
+    },
+    {
+      "do": "wait",
+      "seconds": 2.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardState",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "on|open 1.00|halos 6|",
+      "label": "on again: crystals out, diamonds back"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardSet",
+      "args": {
+        "ward": "w",
+        "capture": 0.5,
+        "captor": "blue"
+      },
+      "contains": "capture 0.50|captor blue",
+      "label": "blue is half way through capturing it"
+    },
+    {
+      "do": "wait",
+      "seconds": 3.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardState",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "captured 6/12|capture 0.50",
+      "label": "half the rune ring has changed color"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardSet",
+      "args": {
+        "ward": "w",
+        "capture": 1.0,
+        "captor": "blue"
+      },
+      "contains": "capture 1.00",
+      "label": "the capture completes"
+    },
+    {
+      "do": "wait",
+      "seconds": 3.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardState",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "captured 12/12",
+      "label": "the whole ring is blue"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "ward capture off"
+      },
+      "contains": "cleared",
+      "label": "teams ward capture off clears it"
+    },
+    {
+      "do": "wait",
+      "seconds": 5.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardState",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "captured 0/12|capture 0.00",
+      "label": "the ring is back to the team color"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": "auto"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

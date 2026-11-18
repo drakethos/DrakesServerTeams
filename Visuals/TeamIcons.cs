@@ -88,6 +88,8 @@ public static class TeamIcons
     static readonly System.Reflection.MethodInfo? LoadImageMethod = HarmonyLib.AccessTools.Method(HarmonyLib.AccessTools.TypeByName("UnityEngine.ImageConversion"), "LoadImage", new[] { typeof(Texture2D), typeof(byte[]) });
     static readonly System.Reflection.MethodInfo? EncodePngMethod = HarmonyLib.AccessTools.Method(HarmonyLib.AccessTools.TypeByName("UnityEngine.ImageConversion"), "EncodeToPNG", new[] { typeof(Texture2D) });
 
+    internal static bool LoadPngInto(Texture2D tex, byte[] bytes) => LoadPng(tex, bytes);
+
     static bool LoadPng(Texture2D tex, byte[] bytes) => LoadImageMethod?.Invoke(null, new object[] { tex, bytes }) is true;
 
     internal static byte[] EncodePng(Texture2D tex) => EncodePngMethod?.Invoke(null, new object[] { tex }) as byte[] ?? new byte[0];
@@ -150,7 +152,7 @@ public static class TeamIcons
         return sprite;
     }
 
-    static bool Inside(string shape, float x, float y)
+    internal static bool Inside(string shape, float x, float y)
     {
         const float r = 0.92f;
         switch (shape)

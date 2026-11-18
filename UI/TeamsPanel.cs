@@ -14,6 +14,7 @@ public enum PanelTab
 {
     Players,
     Teams,
+    Logo,
     Ward,
     Server,
 }
@@ -217,6 +218,13 @@ internal static class TeamsPanelUi
         }
         hint("\"Spawn here\" sets where this team respawns to the spot you stand on. Start stones are an experimental feature (off): placing them can leave seams in the terrain.");
 
+        }
+
+        // ---- logo designer ---------------------------------------------------------------------------------
+        if (Show(PanelTab.Logo))
+        {
+            header("Logo designer");
+            hint("The logo designer lives in the admin window (F6 or 'teams panel'), Logo tab.");
         }
 
         // ---- team ward ------------------------------------------------------------------------------------

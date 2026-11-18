@@ -1,0 +1,314 @@
+{
+  "name": "V-08 the admin window in the DrakeMods look: every tab",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      },
+      "expect": "sample-banner.png",
+      "label": "a custom icon file in the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "ember",
+        "title": "Ember",
+        "color": "#E67E22",
+        "icon": "shield",
+        "glow": ""
+      },
+      "label": "team Ember: #E67E22, icon shield"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "tide",
+        "title": "Tide",
+        "color": "#2980B9",
+        "icon": "star",
+        "glow": ""
+      },
+      "label": "team Tide: #2980B9, icon star"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "moss",
+        "title": "Moss",
+        "color": "#27AE60",
+        "icon": "sample-banner",
+        "glow": ""
+      },
+      "label": "team Moss: #27AE60, icon sample-banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "dusk",
+        "title": "Dusk",
+        "color": "#8E44AD",
+        "icon": "diamond",
+        "glow": "#F1C40F"
+      },
+      "label": "team Dusk: #8E44AD, icon diamond"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.5
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setlogo ember shield:#E67E22:#FFFFFF:0.06|star:#FFFFFF:0:0.05:0.5:0:0"
+      },
+      "contains": "new logo",
+      "label": "Ember gets a logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.goClearing",
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 5,
+      "as": "wardP"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true,
+        "tab": "Players"
+      },
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-window-players"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true,
+        "tab": "Teams"
+      },
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-window-teams"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true,
+        "tab": "Logo"
+      },
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-window-logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true,
+        "tab": "Ward"
+      },
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-window-ward"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true,
+        "tab": "Server"
+      },
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-window-server"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": false
+      },
+      "contains": ""
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

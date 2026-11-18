@@ -1,5 +1,15 @@
 # DrakesServerTeams
 
+## Unreleased
+
+- **New admin window and team picker in the DrakeMods look** (DrakeModsLibs `UkWindow`): bigger, tabs for Players, Teams, Logo, Ward and Server, a real color picker (square, hue strip, hex box) for team colors, glow and logos, sliders for the logo designer, and a Power switch on the Ward tab. **DrakeModsLibs 1.0.5 is now required** (install it with the mod; the mod manager does this for you). Fixes the logo designer's color swatches, which reverted your pick.
+- **Logo designer** (admin panel, Logo tab): build a team logo from a base shape, colors, a border and up to four symbols with position, size, rotation and flip, and a live preview. Console: `teams setlogo` / `teams clearlogo`. Shown on name plates, graves and the Team Ward.
+- **Imported icons:** drop PNGs in `config/DrakeMods.ServerTeams/icons` (or `icons` next to the DLL). `name.png` / `name.recolor.png` is recolored by the layer color, `name.static.png` (or a `name.icon.json` sidecar saying static) is drawn as is. See the README for the limits.
+- **Team banners and flags** (Hammer > Misc): a hanging banner, a standing banner and a standard flag, modelled in Blender (`Models/`) and read from embedded .glb files by the mod's own small loader. The cloth shows the team logo of whoever built the piece (server-signed team stamp, like the Team Ward); built with no team it is grey. **Team Banner (carried)** is an item (Workbench: wood and leather scraps) held upright in the hand; its cloth shows the logo of the team of whoever carries it, and is grey on the ground. Carrying and capture rules belong to the War extension.
+- **New Team Ward model**, made in Blender from the guard stone: a stepped hex plinth, four team-colored crystals, a halo of six floating diamonds and a ring of twelve rune glyphs on the plinth. It keeps the game's stone and rune-glow materials, so the glow works as before and still takes the team color.
+- **Team Ward on / off**: ON, the crystals stand out, the diamonds float and orbit, the runes glow. OFF, the crystals fold in and sink, the diamonds are gone and the runes go dark. Admin test command `teams ward power on|off`; extensions call `TeamWard.SetPower`.
+- **Capture display**: when an enemy is capturing a ward, the rune ring slowly changes to the capturing team's color, clockwise from 12 o'clock, as the progress grows. Teams only draws it: `teams ward capture <0-100|off> <team>` to try it, `TeamWard.SetCapture(ward, progress, team)` for the War extension, which owns the capture rules.
+
 ## 0.1.0-beta.4
 
 - **Packaging fix:** the zip now ships the DLL under `plugins/` so Gale and r2modman keep the folder layout (they flatten anything outside `plugins/`). A build guard (`check-gale-layout.py`) fails the release if that regresses. No code or gameplay change.

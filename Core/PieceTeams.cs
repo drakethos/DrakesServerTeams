@@ -215,7 +215,8 @@ public static class PieceTeams
         {
             if (prefab == null || prefab.GetComponent<Piece>() == null)
                 continue;
-            if (prefab.GetComponent<PrivateArea>() != null
+            if (TeamBanners.IsBanner(prefab.name)
+                || prefab.GetComponent<PrivateArea>() != null
                 || prefab.GetComponentInChildren<Container>(true) != null
                 || prefab.GetComponentInChildren<Door>(true) != null)
                 StampedPrefabs.Add(prefab.name.GetStableHashCode());
@@ -292,7 +293,8 @@ static class PieceSetCreatorPatch
         var zdo = view != null && view.IsValid() ? view.GetZDO() : null;
         if (zdo == null || zdo.GetLong("creator".GetStableHashCode(), 0L) != Player.m_localPlayer.GetPlayerID())
             return;
-        if (__instance.GetComponent<PrivateArea>() == null
+        if (!TeamBanners.IsBanner(__instance.gameObject.name)
+            && __instance.GetComponent<PrivateArea>() == null
             && __instance.GetComponentInChildren<Container>(true) == null
             && __instance.GetComponentInChildren<Door>(true) == null)
             return;

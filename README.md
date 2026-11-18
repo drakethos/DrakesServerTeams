@@ -34,7 +34,7 @@ More pictures: [gallery](https://github.com/drakethos/DrakesServerTeams/blob/mai
 
 ## Setup
 
-Install on the server and on every client (it is network-checked). Needs BepInEx and Jotunn only; DrakeModsLibs is not required.
+Install on the server and on every client (it is network-checked). Needs BepInEx, Jotunn and **DrakeModsLibs 1.0.5 or newer** (the admin window and the team picker use its shared DrakeMods window).
 
 On first start the server writes `BepInEx/config/DrakeMods.ServerTeams/teams.json`:
 
@@ -76,6 +76,26 @@ The team each player shows to other clients is also corrected by the server ever
 - Admins only: `teams offer <player|all>` (show the team picker again), `teams who`, `teams assign <player> <team>`, `teams forget <player|id:N>`, `teams setspawn <team>` (uses where you stand), `teams clearspawn <team>`
 
 The server decides everything; commands only ask. Admin means the server's `adminlist.txt`, or the host on a listen server.
+
+## Team logos (admin panel, Logo tab)
+
+Open the panel (F6) and pick the **Logo** tab. Choose a team, then build its logo the way Rock Band or Guitar Hero let you: a **base** (shield, circle, square, diamond, hexagon, banner) with a color and border, plus up to **four symbols** (built in, or imported). Each symbol has its own color, position, size, rotation and flip. The preview updates live; **Apply to team** sends `teams setlogo` to the server. The logo shows on name plates, graves and the Team Ward. Without a logo a team keeps its plain icon. Console: `teams setlogo <team> <spec>`, `teams clearlogo <team>`.
+
+### Importing your own icons
+
+Put PNG files in `BepInEx/config/DrakeMods.ServerTeams/icons/` (or an `icons` folder next to the DLL, which is what a modpack ships). The file name, without the extension, is the symbol name. **Tell the mod how to use each picture:**
+
+| How | File | What happens |
+|---|---|---|
+| **Recolored** (default) | `eagle.png` or `eagle.recolor.png` | Treated as a mask: the picture's brightness and transparency are multiplied by the color you pick for that layer. Draw it white (or grey) on transparent, and the designer can tint it any color. |
+| **Static** (used as is) | `crest.static.png` | Drawn exactly as it is, in its own colors. The layer color is ignored. |
+| **Static by sidecar** | `crest.png` plus `crest.icon.json` containing `"static"` (for example `{ "mode": "static" }`) | The same as `.static.png`, for tools that cannot rename a file. |
+
+Rules and limits:
+- PNG only, at most **1024 x 1024** pixels and **512 KB**. Square works best. Bigger or broken files are skipped with a log warning.
+- Symbol names may use letters, digits, `-` and `_` only.
+- **Every player needs the same icon files** (that is why a modpack should ship the folder). A logo is sent to clients as text; the pictures are not. A client missing an icon simply leaves that layer out, and the rest of the logo still shows. The designer marks such a symbol as "not on this machine".
+- A logo is at most four symbols and 600 characters.
 
 ## Spawn points
 

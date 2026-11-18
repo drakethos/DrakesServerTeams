@@ -1,0 +1,56 @@
+{
+  "name": "T-55 diagnostic: how vanilla items sit in the hand (listed in the log)",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.itemAxes",
+      "args": {
+        "prefab": "Torch"
+      },
+      "contains": "attach=",
+      "label": "Torch"
+    },
+    {
+      "do": "hook",
+      "name": "teams.itemAxes",
+      "args": {
+        "prefab": "Club"
+      },
+      "contains": "attach=",
+      "label": "Club"
+    },
+    {
+      "do": "hook",
+      "name": "teams.itemAxes",
+      "args": {
+        "prefab": "SpearFlint"
+      },
+      "contains": "attach=",
+      "label": "SpearFlint"
+    },
+    {
+      "do": "hook",
+      "name": "teams.itemAxes",
+      "args": {
+        "prefab": "TeamBannerCarry"
+      },
+      "contains": "attach=",
+      "label": "our carried banner"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

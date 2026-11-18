@@ -42,7 +42,7 @@ public sealed class TeamsCommand : ConsoleCommand
         }
     }
 
-    public override List<string> CommandOptionList() => new() { "list", "join", "who", "assign", "forget", "setspawn", "clearspawn", "seticon", "pick", "offer", "panel", "deathrules", "setglow", "setcolor", "spawnstones", "ward" };
+    public override List<string> CommandOptionList() => new() { "list", "join", "who", "assign", "forget", "setspawn", "clearspawn", "seticon", "pick", "offer", "panel", "deathrules", "setglow", "setlogo", "clearlogo", "setcolor", "spawnstones", "ward" };
 
     static void Show()
     {

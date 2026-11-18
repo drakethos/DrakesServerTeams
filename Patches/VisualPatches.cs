@@ -75,8 +75,8 @@ static class NameplatePatch
             iconTf.gameObject.SetActive(true);
             image = iconTf.GetComponent<Image>();
         }
-        image.sprite = TeamIcons.Get(team.Icon);
-        image.color = TeamIcons.IsTinted(team.Icon) ? color : Color.white;
+        image.sprite = TeamLogos.GetSprite(team, out var tinted);
+        image.color = tinted ? color : Color.white;
         return TeamIcons.ToHex(name.color) + "|" + TeamIcons.Normalize(team.Icon);
     }
 }

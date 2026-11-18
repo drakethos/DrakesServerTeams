@@ -146,6 +146,109 @@ T('V-05', 'the Team Ward: obsidian look, team glow and label, and its Shift+E se
     H('closeWardPanel', contains=''),
 ], 'Two Team Wards (Ember and Tide) next to each other: obsidian body, rune glow and light in the team color, icon and name above. The last picture is the Shift+E settings window.')
 
+def spot(prefab, tag, team=None, dz=4.0, extra=None, shots=()):
+    """A fresh patch of ground 14 m to the side, the piece 4 m in front of the camera, then the pictures."""
+    steps = [{'do': 'teleport', 'dx': 14, 'dz': 0}, wait(0.8)]
+    if team:
+        steps.append(H('assignTo', expect=team, player='Alice', team=team))
+    steps += [{'do': 'place', 'prefab': prefab, 'dz': dz, 'as': tag}, wait(1.2)]
+    steps += extra or []
+    steps += [{'do': 'face', 'target': tag}, {'do': 'teleport', 'dz': -3.5}, {'do': 'face', 'target': tag}, wait(0.8)]
+    for name in shots:
+        steps.append(shot(name))
+    return steps
+
+
+T('V-09', 'the carried team banner in hand', [
+    *setup_teams(), H('setTime', time=DAY), H('setAdmin', on=True),
+    H('adminCommand', contains='new logo', label='Ember gets a logo', line='setlogo ember shield:#E67E22:#FFFFFF:0.06|star:#FFFFFF:0:0.05:0.5:0:0'),
+    *to_clearing(),
+    {'do': 'playAs', 'who': 'Alice'},
+    H('assignTo', expect='ember', player='Alice', team='ember'),
+    {'do': 'give', 'prefab': 'TeamBannerCarry', 'equip': True}, wait(1.5),
+    shot('teams-carried-day'),
+    {'do': 'teleport', 'dz': 0}, wait(0.5), shot('teams-carried-day-2'),
+])
+
+T('V-08', 'the admin window in the DrakeMods look: every tab', [
+    *setup_teams(), H('setTime', time=DAY), H('setAdmin', on=True),
+    H('adminCommand', contains='new logo', label='Ember gets a logo', line='setlogo ember shield:#E67E22:#FFFFFF:0.06|star:#FFFFFF:0:0.05:0.5:0:0'),
+    *to_clearing(),
+    {'do': 'playAs', 'who': 'Alice'},
+    H('assignTo', expect='ember', player='Alice', team='ember'),
+    {'do': 'place', 'prefab': 'TeamWard', 'dz': 5, 'as': 'wardP'}, wait(1.0),
+    H('openPanel', open=True, tab='Players', contains=''), wait(1.5), {'do': 'screenshot', 'name': 'teams-window-players'},
+    H('openPanel', open=True, tab='Teams', contains=''), wait(1.0), {'do': 'screenshot', 'name': 'teams-window-teams'},
+    H('openPanel', open=True, tab='Logo', contains=''), wait(1.0), {'do': 'screenshot', 'name': 'teams-window-logo'},
+    H('openPanel', open=True, tab='Ward', contains=''), wait(1.0), {'do': 'screenshot', 'name': 'teams-window-ward'},
+    H('openPanel', open=True, tab='Server', contains=''), wait(1.0), {'do': 'screenshot', 'name': 'teams-window-server'},
+    H('openPanel', open=False, contains=''),
+])
+
+T('V-07', 'diagnostic: which banner material shows magenta', [
+    *setup_teams(), H('setTime', time=DAY), H('setAdmin', on=True),
+    *to_clearing(),
+    {'do': 'playAs', 'who': 'Alice'},
+    *spot('TeamBannerStanding', 'plain', 'ember', dz=3.0, shots=('teams-diag-plain',)),
+    *spot('TeamBannerStanding', 'ironAsWood', 'ember', dz=3.0, extra=[H('bannerSwap', contains='swapped', target='ironAsWood', slot=1, **{'with': 0})], shots=('teams-diag-iron-as-wood',)),
+    *spot('TeamBannerStanding', 'woodAsIron', 'ember', dz=3.0, extra=[H('bannerSwap', contains='swapped', target='woodAsIron', slot=0, **{'with': 1})], shots=('teams-diag-wood-as-iron',)),
+])
+
+T('V-06', 'team banners and flags with team logos, and the Team Ward with its moving parts', [
+    *setup_teams(), H('setTime', time=DAY), H('setAdmin', on=True),
+    H('adminCommand', contains='new logo', label='Ember gets a logo', line='setlogo ember shield:#E67E22:#FFFFFF:0.06|star:#FFFFFF:0:0.05:0.5:0:0'),
+    H('adminCommand', contains='new logo', label='Tide gets a logo', line='setlogo tide circle:#2980B9:#FFFFFF:0.08|moon:#FFFFFF:0:0:0.55:0:0'),
+    *to_clearing(),
+    {'do': 'playAs', 'who': 'Alice'},
+    *spot('TeamBannerStanding', 'standA', 'ember', dz=3.0, extra=[{'do': 'place', 'prefab': 'piece_chest_wood', 'dz': 3.0, 'dx': 1.8, 'as': 'chestRef'}, wait(1.0)], shots=('teams-banner-standing-ember',)),
+    *spot('TeamFlag', 'flagB', 'tide', dz=3.0, shots=('teams-flag-tide',)),
+    *spot('TeamBannerHanging', 'hangA', 'ember', dz=3.2, shots=('teams-banner-hanging-ember',)),
+    *spot('piece_chest_wood', 'vanilla', 'ember', shots=('teams-vanilla-chest-compare',)),
+    *spot('TeamWard', 'wardOn', 'ember', dz=6.0, shots=('teams-ward-on-day',)),
+    H('setTime', time=NIGHT), wait(1.0), shot('teams-ward-on-night'),
+    *spot('TeamWard', 'wardOff', 'tide', dz=6.0, extra=[H('wardSet', contains='power off', ward='wardOff', power=False), wait(2.6)], shots=('teams-ward-off-night',)),
+    {'do': 'teleport', 'dx': 14, 'dz': 0}, wait(0.8), H('assignTo', expect='ember', player='Alice', team='ember'),
+    {'do': 'give', 'prefab': 'TeamBannerCarry', 'equip': True}, wait(1.5), shot('teams-banner-carried'),
+    *spot('TeamWard', 'wardCap', 'ember', dz=6.0,
+          extra=[H('wardSet', contains='capture 0.50', ward='wardCap', capture=0.5, captor='tide'), wait(3.5)], shots=('teams-ward-capture-half-night',)),
+], 'Banners (standing, hanging) and flags for two teams carry their team logos; a vanilla chest beside them for comparison; the Team Ward on, off, and half-way through a capture by the other team (the rune ring changes color clockwise).')
+
+T('V-12', 'the Team Ward with its figure: wolf, dragon, stag, stone, Freya and Thor, day and night', [
+    *setup_teams(), H('setTime', time=DAY), H('setAdmin', on=True),
+    *to_clearing(),
+    {'do': 'playAs', 'who': 'Alice'},
+    *[step for team, tag in (('ember', 'wolf'), ('tide', 'dragon'), ('moss', 'stag'), ('dusk', 'stone'), ('ember', 'freya'), ('tide', 'thor')) for step in (
+        H('setFigure', expect=tag, team=team, figure=tag),
+        *spot('TeamWard', 'w_' + tag, team, dz=5.0, shots=(f'teams-figure-{tag}-day',)),
+        H('setTime', time=NIGHT), wait(1.0), shot(f'teams-figure-{tag}-night'), H('setTime', time=DAY))],
+])
+T('V-13', 'figure wards on cleared ground at night, next to the original: do the flow channels glow and pulse?', [
+    *setup_teams(), H('setTime', time=NIGHT), H('setAdmin', on=True),
+    *to_clearing(),
+    {'do': 'playAs', 'who': 'Alice'},
+    {'do': 'teleport', 'dx': 30, 'dz': 30}, wait(1.0),
+    H('clearArea', contains='', label='cleared ground: trees, rocks and stones switched off here', radius=22), wait(0.5),
+    *[step for team, tag in (('dusk', 'stone'), ('ember', 'wolf'), ('tide', 'dragon'), ('moss', 'stag')) for step in (
+        H('setFigure', expect=tag, team=team, figure=tag),
+        H('assignTo', expect=team, player='Alice', team=team),
+        {'do': 'place', 'prefab': 'TeamWard', 'dz': 3.0, 'dx': {'dusk': -6, 'ember': -2, 'tide': 2, 'moss': 6}[team], 'as': 'c_' + tag}, wait(1.5))],
+    H('wardShot', contains='yaw', label='the four wards from the front', ward='c_wolf', file='teams-close-all-a', back=9.0, height=2.2, yaw=0), 
+    wait(0.9), H('wardShot', contains='yaw', label='again, a moment later', ward='c_wolf', file='teams-close-all-b', back=9.0, height=2.2, yaw=0),
+    *[step for tag in ('stone', 'wolf', 'dragon', 'stag') for step in (
+        H('wardShot', contains='yaw', label=tag + ' close', ward='c_' + tag, file=f'teams-close-{tag}', back=3.4, height=1.5, yaw=0),)],
+])
+T('V-14', 'diagnostic: the light effects on a stone ward and a wolf ward', [
+    *setup_teams(), H('setTime', time=NIGHT), H('setAdmin', on=True),
+    *to_clearing(),
+    {'do': 'playAs', 'who': 'Alice'},
+    H('setFigure', expect='stone', team='dusk', figure='stone'), H('setFigure', expect='wolf', team='ember', figure='wolf'),
+    H('assignTo', expect='dusk', player='Alice', team='dusk'),
+    {'do': 'place', 'prefab': 'TeamWard', 'dz': 3.0, 'dx': -3, 'as': 'ds'}, wait(0.5),
+    H('assignTo', expect='ember', player='Alice', team='ember'),
+    {'do': 'place', 'prefab': 'TeamWard', 'dz': 3.0, 'dx': 3, 'as': 'wf'}, wait(2.5),
+    H('lightInfo', contains='', label='stone ward', ward='ds'),
+    H('lightInfo', contains='', label='wolf ward', ward='wf'),
+])
 suite = {
     'name': 'DrakesServerTeams-Visuals',
     'description': 'Screenshots of the team visuals with several players: name colors, faction icons (built-in and a custom PNG), glow and graves. '

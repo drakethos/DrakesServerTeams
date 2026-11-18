@@ -1,0 +1,391 @@
+{
+  "name": "T-56 logo tab: click through layers, colors, apply, revert and drafts",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "clearlogo red"
+      },
+      "contains": "plain icon",
+      "label": "red starts without a logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": true,
+        "tab": "Logo"
+      },
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "click",
+      "button": "Crimson"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "red|sel -1|layers 1 star|dirty|shield:",
+      "label": "base selected; a team without a logo starts from a starter draft that is not applied yet"
+    },
+    {
+      "do": "click",
+      "button": "circle"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "|dirty|circle:",
+      "label": "picking a base shape changes the draft"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamLogo",
+      "args": {
+        "team": "red"
+      },
+      "expect": "",
+      "label": "and nothing reached the team"
+    },
+    {
+      "do": "click",
+      "button": "+ Symbol"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "sel 1|layers 2 star,star|",
+      "label": "+ Symbol adds a layer and selects it"
+    },
+    {
+      "do": "click",
+      "button": "moon"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "sel 1|layers 2 star,moon|",
+      "label": "the symbol buttons change the selected layer only"
+    },
+    {
+      "do": "click",
+      "button": "quick-#2980B9"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "|moon:#2980B9:",
+      "label": "a quick color paints the selected symbol"
+    },
+    {
+      "do": "click",
+      "button": "Base: circle"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "sel -1|layers 2 star,moon|",
+      "label": "clicking the base row selects the base"
+    },
+    {
+      "do": "click",
+      "button": "tile-Border"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "click",
+      "button": "quick-#27AE60"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": ":#27AE60:",
+      "label": "with Border chosen, a quick color paints the border"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamLogo",
+      "args": {
+        "team": "red"
+      },
+      "expect": "",
+      "label": "still nothing applied to the team"
+    },
+    {
+      "do": "click",
+      "button": "Apply to team"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamLogo",
+      "args": {
+        "team": "red"
+      },
+      "contains": "circle:",
+      "label": "Apply to team sends the logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "|clean|",
+      "label": "and the draft is clean"
+    },
+    {
+      "do": "click",
+      "button": "+ Symbol"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "sel 2|layers 3 star,moon,star|",
+      "label": "a third layer"
+    },
+    {
+      "do": "click",
+      "button": "Symbol 2: moon"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "sel 1|",
+      "label": "clicking a layer row selects it"
+    },
+    {
+      "do": "click",
+      "button": "▲",
+      "nth": 1
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "sel 2|layers 3 star,star,moon|",
+      "label": "the up arrow of that row moves the moon above the star"
+    },
+    {
+      "do": "click",
+      "button": "✕",
+      "nth": 1
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "layers 2 star,star|",
+      "label": "the top row remove button removes the top symbol"
+    },
+    {
+      "do": "click",
+      "button": "Revert"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "layers 2 star,moon|clean|",
+      "label": "Revert brings back the applied logo"
+    },
+    {
+      "do": "click",
+      "button": "square"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "|dirty|square:",
+      "label": "a new unsaved change"
+    },
+    {
+      "do": "click",
+      "button": "Saphire"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "blue|",
+      "label": "switched to the other team"
+    },
+    {
+      "do": "click",
+      "button": "Crimson"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoState",
+      "contains": "red|sel -1|layers 2 star,moon|dirty|square:",
+      "label": "the unsaved draft was still there"
+    },
+    {
+      "do": "click",
+      "button": "Apply to team"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamLogo",
+      "args": {
+        "team": "red"
+      },
+      "contains": "square:",
+      "label": "and applies"
+    },
+    {
+      "do": "hook",
+      "name": "teams.openPanel",
+      "args": {
+        "open": false
+      },
+      "contains": ""
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": "auto"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

@@ -126,9 +126,9 @@ public sealed class TeamGrave : MonoBehaviour
                 Hide();
             return;
         }
-        if (_applied == team.Id + team.Color + team.Icon + team.GlowColor)
+        if (_applied == team.Id + team.Color + team.Icon + team.GlowColor + team.Logo)
             return;
-        _applied = team.Id + team.Color + team.Icon + team.GlowColor;
+        _applied = team.Id + team.Color + team.Icon + team.GlowColor + team.Logo;
         var color = TeamIcons.ParseColor(team.Color);
 
         var worldText = GameFields.WorldText(_tomb);
@@ -160,8 +160,8 @@ public sealed class TeamGrave : MonoBehaviour
             _icon = go.AddComponent<SpriteRenderer>();
             _icon.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
         }
-        _icon.sprite = TeamIcons.Get(team.Icon);
-        _icon.color = TeamIcons.IsTinted(team.Icon) ? color : Color.white;
+        _icon.sprite = TeamLogos.GetSprite(team, out var tinted);
+        _icon.color = tinted ? color : Color.white;
         _icon.enabled = true;
     }
 

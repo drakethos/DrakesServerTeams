@@ -157,3 +157,28 @@ Measured in the live game with a vanilla ward carrying a team stamp (no custom T
 - **Repair rules (work):** `WearNTear.Repair` prefix: refuse unless the player is on the ward's team, refuse during `cooldown` after the crumble, then restore only `fraction` (30%) of max health.
 - **Not yet:** server-authoritative writes (spike writes the ward ZDO from whoever hits; the real version routes through the server), shield flash/sound/HUD bar, repair channel + material cost, "no repair while enemies near", crumbled broken-look screenshot (state exists, picture not captured), interplay with LockSmith and other ward mods, multi-ward overlap.
 - **Spawn stones note:** SpawnLocationMidGame snaps to a fixed spot per zone, so a team's spawn point moves to wherever the stones really land.
+
+## Logos, banners and flags (owner brief 2026-10-30)
+
+### A. Logo designer (admin panel, no Blender needed)
+A team logo is built like the Rock Band / Guitar Hero logo editor: a **base shape** + up to **4 symbol layers** + a **border**, each with a color. The admin picks parts from presets, then moves / scales / rotates / flips each layer, in the admin panel (new "Logo" section on the Teams tab, with a live preview).
+- **Spec** (stored in `teams.json` as `Logo`, compact string): base (shield, circle, diamond, swallowtail banner, ...), base color, border color + width, layers `[symbol, color, x, y, scale, rotation, flip]`. Replaces the single `Icon` (an old `Icon` still works: it becomes a one-layer logo).
+- **Rendered at runtime** into a 256x256 texture (cached by spec hash) and used everywhere a team icon is shown: nameplate, grave, Team Ward label, and the cloth of banners and flags.
+- **Synced** to clients inside the team list (the spec is a few hundred bytes).
+- **Imported icons** are PNG files the server admin drops into an `icons` folder (config folder or next to the DLL, so a modpack can ship them). Each declares how it is used:
+  - **recolor**: the picture is a mask (white/grey on transparent); its luminance is multiplied by the layer color. Use for single-color symbols.
+  - **static**: drawn as is, its own colors are kept (a finished logo, a photo, an emblem). The layer color is ignored.
+  - Declared by file name (`wolf.recolor.png`, `crest.static.png`; a plain `name.png` = recolor) or a sidecar `name.icon.json` (`{"mode":"static"}`).
+- **README guidelines** to write: PNG, transparent background, 256x256 or 512x512 square, under 256 KB, safe margin of ~8%, recolor icons white on transparent, names letters/digits/- and _ only, where the files go, and that **every client needs the files** (a modpack ships the folder). Open point: let the server send the finished logo PNG to clients so imported icons need no distribution (the admin's client renders it and uploads it).
+
+### B. Banners and flags (Blender models, not generated)
+All meshes are modelled and UV-mapped in Blender (`Forge/` folder with the `.blend`, a `make_*.py`, and the exported `.glb`, like ItemShop's pieces), exported as glTF and loaded at runtime. The cloth gets the team logo as its texture, so UVs must map the logo cleanly (full 0-1 rectangle on the cloth, no stretching, pole and trim on a separate material/UV island).
+1. **Banner** (hanging / wall banner): same idea as the vanilla banner but with proper image UVs.
+2. **Flag**: a standard flag on a pole (rectangle, flies from a mast).
+3. **Standing banner**: a placed piece, banner on a stand.
+4. **Carryable banner**: an item held in the hands (two-handed, heavy), for capture the flag. The carry mechanics (slowdown, drop on death, capture) belong to the War extension; Teams ships the item and its model.
+Each takes the owning team's logo and colors from the server-signed piece team stamp, like the Team Ward.
+
+### Decisions (owner, 2026-10-30)
+- **Model loader: Teams carries its own small glTF reader** (stays standalone; no Libs needed for banners and flags).
+- **Imported logo icons: read from the icons folder on every client** (a modpack ships the folder). Players missing a file see the default shield. Server-sent logos stay a later option.

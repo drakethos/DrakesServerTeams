@@ -57,10 +57,10 @@
       "name": "teams.setIcon",
       "args": {
         "team": "red",
-        "icon": "banana"
+        "icon": "not a shape!"
       },
       "expect": "shield",
-      "label": "an unknown shape falls back to the default"
+      "label": "an invalid name falls back to the default (a plain name is a custom icon file)"
     },
     {
       "do": "hook",

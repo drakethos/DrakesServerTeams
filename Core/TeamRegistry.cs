@@ -106,6 +106,12 @@ public sealed class TeamRegistry
             if (string.IsNullOrWhiteSpace(t.DisplayName))
                 t.DisplayName = t.Id;
             t.Icon = TeamIcons.Normalize(t.Icon);
+            t.Figure = WardFigures.Normalize(t.Figure);
+            if (!string.IsNullOrWhiteSpace(t.Logo) && !LogoSpec.TryParse(t.Logo, out _, out var logoError))
+            {
+                _log.LogWarning($"teams.json: the logo of team '{t.Id}' is not valid ({logoError}); using its icon instead.");
+                t.Logo = "";
+            }
             if (TeamIcons.TryParseColor(t.Color, out var parsed))
                 t.Color = TeamIcons.ToHex(parsed);
             if (!string.IsNullOrWhiteSpace(t.GlowColor) && TeamIcons.TryParseColor(t.GlowColor, out var glow))
@@ -178,6 +184,18 @@ public sealed class TeamRegistry
         return true;
     }
 
+    /// <summary>Admin: change the figure on the team's Team Wards (an unknown name falls back to the original stone). Saved and pushed to clients.</summary>
+    public bool SetTeamFigure(string teamId, string figure)
+    {
+        var team = GetTeam(teamId);
+        if (team == null)
+            return false;
+        team.Figure = WardFigures.Normalize(figure);
+        SaveTeamsFile();
+        DefinitionsChanged?.Invoke();
+        return true;
+    }
+
     /// <summary>Admin: turn the team's own start stones on or off. Saved to teams.json. Stones already placed in the world stay.</summary>
     public bool SetTeamSpawnStones(string teamId, bool on)
     {
@@ -199,6 +217,27 @@ public sealed class TeamRegistry
         SaveTeamsFile();
         DefinitionsChanged?.Invoke();
         return true;
+    }
+
+    /// <summary>Admin: set a team's logo from a spec string (see <see cref="LogoSpec"/>); an empty string clears it. Returns an error text, or "" when saved.</summary>
+    public string SetTeamLogo(string teamId, string spec)
+    {
+        var team = GetTeam(teamId);
+        if (team == null)
+            return $"Unknown team '{teamId}'.";
+        if (string.IsNullOrWhiteSpace(spec))
+        {
+            team.Logo = "";
+        }
+        else
+        {
+            if (!LogoSpec.TryParse(spec, out var parsed, out var error))
+                return "That logo is not valid: " + error + ".";
+            team.Logo = parsed.ToString();
+        }
+        SaveTeamsFile();
+        DefinitionsChanged?.Invoke();
+        return "";
     }
 
     /// <summary>Admin: set the glow color of a team ("#RRGGBB"), or "" to use the team color. Returns false for an unknown team or a bad color.</summary>

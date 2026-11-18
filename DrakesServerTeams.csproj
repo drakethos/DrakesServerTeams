@@ -35,7 +35,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- The shared DrakeMods look (Libs UkWindow). Local builds use the Libs installed in the test profile; CI passes /p:WorkshopLibsDll (fetched from Hexium). -->
+    <WorkshopLibsDll Condition="'$(WorkshopLibsDll)' == ''">$(BepInExPath)\plugins\DrakeMods-DrakeModsLibs\plugins\DrakeModsLibs.dll</WorkshopLibsDll>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DrakeModsLibs">
+      <HintPath>$(WorkshopLibsDll)</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>$(CorlibPath)\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
     <Reference Include="0Harmony">
       <HintPath>$(BepInExPath)\core\0Harmony.dll</HintPath>
     </Reference>
@@ -102,6 +113,7 @@
     <Compile Include="Core\PieceTeams.cs" />
     <Compile Include="Core\SpawnStones.cs" />
     <Compile Include="Core\TeamWard.cs" />
+    <Compile Include="Visuals\WardFigures.cs" />
     <Compile Include="Core\TeamDefinition.cs" />
     <Compile Include="Core\TeamFiles.cs" />
     <Compile Include="Core\TeamRegistry.cs" />
@@ -117,11 +129,15 @@
     <Compile Include="Patches\VisualPatches.cs" />
     <Compile Include="Visuals\GameFields.cs" />
     <Compile Include="Visuals\TeamIcons.cs" />
+    <Compile Include="Visuals\LogoSpec.cs" />
+    <Compile Include="Visuals\LogoRenderer.cs" />
     <Compile Include="Visuals\TeamGlow.cs" />
     <Compile Include="Visuals\TeamGrave.cs" />
     <Compile Include="UI\TeamsPanel.cs" />
     <Compile Include="UI\AdminPanel.cs" />
     <Compile Include="UI\TeamPicker.cs" />
+    <Compile Include="UI\Uk\TeamsWindow.cs" />
+    <Compile Include="UI\Uk\LogoTab.cs" />
     <Compile Include="UI\LibsBridge.cs" />
     <Compile Include="Visuals\TeamWardVisual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -129,6 +145,21 @@
     <Compile Include="Spikes\WarSpike.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="Spikes\WarCrumble.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="DrakesServerTeamsPlugin.cs" />
+    <Compile Include="Core\TeamBanners.cs" />
+    <Compile Include="Visuals\GlbModel.cs" />
+    <Compile Include="Visuals\TeamBannerVisual.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Blender models, read at runtime by GlbModel (nothing is generated in code). -->
+    <EmbeddedResource Include="Models\banner_hanging.glb"><LogicalName>DrakesServerTeams.Models.banner_hanging.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\banner_standing.glb"><LogicalName>DrakesServerTeams.Models.banner_standing.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\flag_standard.glb"><LogicalName>DrakesServerTeams.Models.flag_standard.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\team_ward.glb"><LogicalName>DrakesServerTeams.Models.team_ward.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\figure_stone.glb"><LogicalName>DrakesServerTeams.Models.figure_stone.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\figure_wolf.glb"><LogicalName>DrakesServerTeams.Models.figure_wolf.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\figure_dragon.glb"><LogicalName>DrakesServerTeams.Models.figure_dragon.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\figure_stag.glb"><LogicalName>DrakesServerTeams.Models.figure_stag.glb</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Models\banner_carry.glb"><LogicalName>DrakesServerTeams.Models.banner_carry.glb</LogicalName></EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

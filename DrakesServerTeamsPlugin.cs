@@ -11,7 +11,7 @@ namespace DrakesServerTeams;
 [BepInPlugin(GUID, ModName, Version)]
 [BepInDependency(Main.ModGuid)]
 [BepInDependency("com.drakemods.testlab", BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency("com.drakemods.libs", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("com.drakemods.libs")]
 [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
 {
@@ -35,6 +35,7 @@ public partial class DrakesServerTeamsPlugin : BaseUnityPlugin
         TeamsConfig.Bind(Config);
         PieceTeams.Init(Logger);
         TeamWard.Register();
+        TeamBanners.Register();
         TeamsNet.Init(this, Logger);
         CommandManager.Instance.AddConsoleCommand(new TeamsCommand());
 

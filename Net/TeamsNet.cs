@@ -200,6 +200,8 @@ public static class TeamsNet
                 SpawnZ = pkg.ReadSingle(),
                 Icon = pkg.ReadString(),
                 GlowColor = pkg.ReadString(),
+                Logo = pkg.ReadString(),
+                Figure = pkg.ReadString(),
             });
         }
 
@@ -478,6 +480,8 @@ public static class TeamsNet
             pkg.Write(t.SpawnZ);
             pkg.Write(t.Icon ?? "shield");
             pkg.Write(t.GlowColor ?? "");
+            pkg.Write(t.Logo ?? "");
+            pkg.Write(t.Figure ?? "stone");
         }
 
         DeathRulesState.EnsureLoadedOnServer(_log);

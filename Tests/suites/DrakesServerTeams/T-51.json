@@ -1,0 +1,329 @@
+{
+  "name": "T-51 logo designer: specs parse, render, and imported icons recolor or stay static",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoRoundTrip",
+      "args": {
+        "spec": "shield:#c0392b:#ffffff:0.06|star:#ffffff:0:0:0.5:0:0"
+      },
+      "expect": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0",
+      "label": "a spec round-trips (colors upper-cased)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoRoundTrip",
+      "args": {
+        "spec": "shield:#C0392B"
+      },
+      "contains": "invalid",
+      "label": "a spec with a missing part is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoRoundTrip",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0|star:#FFFFFF:0:0:0.5:0:0|star:#FFFFFF:0:0:0.5:0:0|star:#FFFFFF:0:0:0.5:0:0|star:#FFFFFF:0:0:0.5:0:0"
+      },
+      "contains": "invalid",
+      "label": "five symbols are too many"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoRoundTrip",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|../secret:#FFFFFF:0:0:0.5:0:0"
+      },
+      "contains": "invalid",
+      "label": "a path in a symbol name is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoRoundTrip",
+      "args": {
+        "spec": "shield:red:#FFFFFF:0.06"
+      },
+      "contains": "invalid",
+      "label": "a bad color is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoRoundTrip",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:9:-9:9:999:1"
+      },
+      "expect": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:1.5:-1.5:2:360:1",
+      "label": "numbers are clamped to sane ranges"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06",
+        "x": 0,
+        "y": 0
+      },
+      "expect": "#C0392B",
+      "label": "the center of a plain logo is the base color"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "circle:#C0392B:#FFFFFF:0.06",
+        "x": 0.9,
+        "y": 0.9
+      },
+      "expect": "clear",
+      "label": "outside the base is transparent"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "circle:#C0392B:#FFFFFF:0.2",
+        "x": 0.85,
+        "y": 0
+      },
+      "expect": "#FFFFFF",
+      "label": "the border is drawn at the rim"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0",
+        "x": 0,
+        "y": 0
+      },
+      "expect": "#FFFFFF",
+      "label": "a white star sits on the center"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0",
+        "x": 0.6,
+        "y": 0.1
+      },
+      "expect": "#C0392B",
+      "label": "and not beyond its size"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0|circle:#2980B9:0:0:0.2:0:0",
+        "x": 0,
+        "y": 0
+      },
+      "expect": "#2980B9",
+      "label": "a later symbol draws over an earlier one"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|not-an-icon:#FFFFFF:0:0:0.5:0:0",
+        "x": 0,
+        "y": 0
+      },
+      "expect": "#C0392B",
+      "label": "a symbol that is not on this machine is skipped, the logo stays"
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeLogoIcons",
+      "expect": "written",
+      "label": "drop three sample icons into the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconMode",
+      "args": {
+        "icon": "tlogo-mask"
+      },
+      "expect": "recolor",
+      "label": "a plain name.png is a recolor mask"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconMode",
+      "args": {
+        "icon": "tlogo-flat"
+      },
+      "expect": "static",
+      "label": "name.static.png is static"
+    },
+    {
+      "do": "hook",
+      "name": "teams.iconMode",
+      "args": {
+        "icon": "tlogo-side"
+      },
+      "expect": "static",
+      "label": "a sidecar name.icon.json can say static"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|tlogo-mask:#00FF00:0:0:0.8:0:0",
+        "x": 0,
+        "y": 0
+      },
+      "expect": "#00FF00",
+      "label": "a recolor icon takes the layer color"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|tlogo-flat:#FF0000:0:0:0.8:0:0",
+        "x": 0,
+        "y": 0
+      },
+      "expect": "#0000FF",
+      "label": "a static icon keeps its own colors and ignores the layer color"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|tlogo-side:#FF0000:0:0:0.8:0:0",
+        "x": 0,
+        "y": 0
+      },
+      "expect": "#FF8000",
+      "label": "static by sidecar keeps its own orange"
+    },
+    {
+      "do": "hook",
+      "name": "teams.logoPixel",
+      "args": {
+        "spec": "shield:#C0392B:#FFFFFF:0.06|tlogo-mask:#00FF00:0:0:0.8:0:0",
+        "x": 0.6,
+        "y": 0
+      },
+      "expect": "#C0392B",
+      "label": "outside the small imported square the base shows"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteLogoIcons",
+      "expect": 4,
+      "label": "clean up the sample icons"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setlogo red shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0"
+      },
+      "contains": "new logo",
+      "label": "teams setlogo stores a valid logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamLogo",
+      "args": {
+        "team": "red"
+      },
+      "expect": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0",
+      "label": "and it is saved on the team"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setlogo red shield:red"
+      },
+      "contains": "not valid",
+      "label": "an invalid logo is refused"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamLogo",
+      "args": {
+        "team": "red"
+      },
+      "expect": "shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0",
+      "label": "the stored logo did not change"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "clearlogo red"
+      },
+      "contains": "plain icon",
+      "label": "teams clearlogo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.teamLogo",
+      "args": {
+        "team": "red"
+      },
+      "expect": "",
+      "label": "the logo is gone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

@@ -1,0 +1,306 @@
+{
+  "name": "T-57 ward figures: a team picks the figure in the middle of its Team Ward",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "green"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "red"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearSpawn",
+      "args": {
+        "team": "blue"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "1 Assignment/AssignmentMode": "AdminOnly",
+        "1 Assignment/PlayersCanSwitchTeams": "false",
+        "1 Assignment/MoveToSpawnOnFirstTeam": "false",
+        "7 Experimental/SpawnStonesExperimental": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assign",
+      "args": {
+        "team": "red"
+      },
+      "expect": "red",
+      "label": "Alice is on red"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 6,
+      "as": "w"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "stone|stone_runes:1 slots",
+      "label": "a team starts with the original guard stone in the middle"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "red",
+        "figure": "wolf"
+      },
+      "expect": "wolf",
+      "label": "red picks the wolf"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "figure_wolf:2 slots",
+      "label": "the wolf stands on the ward: one body mesh with stone and glow materials"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "|channels 10",
+      "label": "the wolf has its ten glowing flow channels"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "red",
+        "figure": "dragon"
+      },
+      "expect": "dragon",
+      "label": "then the dragon"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "figure_dragon:2 slots",
+      "label": "the dragon replaced the wolf"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "|channels 12",
+      "label": "the dragon has twelve"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "red",
+        "figure": "stag"
+      },
+      "expect": "stag",
+      "label": "then the stag"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "figure_stag:2 slots",
+      "label": "the stag replaced the dragon"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "|channels 11",
+      "label": "the stag has eleven"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "red",
+        "figure": "freya"
+      },
+      "expect": "freya",
+      "label": "then Freya, borrowed from the game statue"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "freya|default:",
+      "label": "Freya stands on the ward with her own mesh"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "red",
+        "figure": "thor"
+      },
+      "expect": "thor",
+      "label": "then Thor"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "thor|",
+      "label": "Thor replaced Freya (and has at least one part)"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "red",
+        "figure": "unicorn"
+      },
+      "expect": "stone",
+      "label": "an unknown figure falls back to the original stone"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "stone|stone_runes:1 slots",
+      "label": "and the original stone is back"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setfigure red wolf"
+      },
+      "contains": "ward figure: wolf",
+      "label": "the console command sets it too"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardFigure",
+      "args": {
+        "ward": "w"
+      },
+      "contains": "wolf|figure_wolf:",
+      "label": "and the ward follows"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setfigure red"
+      },
+      "contains": "Usage: teams setfigure",
+      "label": "a missing figure shows the usage"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "red",
+        "figure": "stone"
+      },
+      "expect": "stone",
+      "label": "tidy up"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

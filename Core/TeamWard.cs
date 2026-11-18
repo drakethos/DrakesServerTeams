@@ -34,6 +34,47 @@ public static class TeamWard
     public static readonly int ChestKey = "DrakesServerTeams_wardChests".GetStableHashCode();
     public static readonly int DoorKey = "DrakesServerTeams_wardDoors".GetStableHashCode();
 
+    // Ward state shown by the model (server writes, everyone reads). Power: 0 = on (default), 1 = off. Capture: progress 0..1 and the
+    // team that is taking the ward; the rune ring sweeps the captor's color around as the progress grows. The capture MECHANICS belong
+    // to the War extension; Teams only draws what these say.
+    public static readonly int PowerKey = "DrakesServerTeams_wardPower".GetStableHashCode();
+    public static readonly int CaptureKey = "DrakesServerTeams_wardCapture".GetStableHashCode();
+    public static readonly int CaptorKey = "DrakesServerTeams_wardCaptor".GetStableHashCode();
+
+    public static bool IsPowered(PrivateArea area) => (Zdo(area)?.GetInt(PowerKey, 0) ?? 0) == 0;
+
+    /// <summary>0..1, how far an enemy has got capturing this ward.</summary>
+    public static float CaptureProgress(PrivateArea area) => Mathf.Clamp01(Zdo(area)?.GetFloat(CaptureKey, 0f) ?? 0f);
+
+    /// <summary>The team capturing the ward, or null.</summary>
+    public static string? Captor(PrivateArea area)
+    {
+        var id = Zdo(area)?.GetString(CaptorKey, "") ?? "";
+        return id.Length > 0 ? id : null;
+    }
+
+    /// <summary>Server / extensions: switch the ward on or off (the crystals fold in and the runes go dark when off).</summary>
+    public static bool SetPower(PrivateArea area, bool on)
+    {
+        var zdo = Zdo(area);
+        if (zdo == null)
+            return false;
+        zdo.Set(PowerKey, on ? 0 : 1);
+        return true;
+    }
+
+    /// <summary>Server / extensions: show a capture in progress (0..1 by <paramref name="captorTeam"/>). 0 or no team clears it.</summary>
+    public static bool SetCapture(PrivateArea area, float progress, string? captorTeam)
+    {
+        var zdo = Zdo(area);
+        if (zdo == null)
+            return false;
+        var p = Mathf.Clamp01(progress);
+        zdo.Set(CaptureKey, captorTeam == null ? 0f : p);
+        zdo.Set(CaptorKey, p <= 0f || captorTeam == null ? "" : captorTeam);
+        return true;
+    }
+
     static readonly FieldInfo? AllAreas = AccessTools.Field(typeof(PrivateArea), "m_allAreas");
     static readonly FieldInfo? AreaView = AccessTools.Field(typeof(PrivateArea), "m_nview");
 
@@ -159,6 +200,55 @@ public static class TeamWard
         PrefabManager.OnVanillaPrefabsAvailable += RegisterPiece;
     }
 
+    /// <summary>
+    /// Swap the guard stone's look for the Blender model (plinth, crystal shards, halo). The new mesh wears the game's own stone and
+    /// rune-glow materials, so the glow behaves exactly like the vanilla ward and the tint code below keeps working. The vanilla
+    /// renderers are only switched off; colliders, the ward's area and effects stay as they were. Any problem keeps the vanilla look.
+    /// </summary>
+    /// <summary>The guard stone's own materials, found on the vanilla prefab: the ward figures (<see cref="WardFigures"/>) use them too.</summary>
+    internal static Material? StoneMaterial, GlowMaterial;
+
+    static void ApplyModel(GameObject clone)
+    {
+        if (!GlbModel.TryLoadParts("team_ward", out var parts, out var error))
+        {
+            TeamsNet.Warn($"Team Ward model not loaded ({error}); using the plain guard stone look.");
+            return;
+        }
+        Material? stone = null, glow = null;
+        var vanilla = new List<MeshRenderer>();
+        foreach (var r in clone.GetComponentsInChildren<MeshRenderer>(true))
+        {
+            foreach (var m in r.sharedMaterials)
+            {
+                if (m == null)
+                    continue;
+                if (m.name.Contains("OdenGlow")) { glow = m; vanilla.Add(r); }
+                else if (m.name.Contains("Oden_mat")) { stone = m; vanilla.Add(r); }
+            }
+        }
+        if (stone == null || glow == null)
+        {
+            TeamsNet.Warn("Team Ward model: the guard stone's materials were not found; using the plain guard stone look.");
+            return;
+        }
+        StoneMaterial = stone;
+        GlowMaterial = glow;
+        foreach (var r in vanilla)
+            r.enabled = false;
+        foreach (var part in parts)
+        {
+            var slots = new Material[part.Materials.Length];
+            for (var i = 0; i < slots.Length; i++)
+                slots[i] = part.Materials[i].name.Contains("Glow") ? glow : stone;
+            var go = new GameObject(part.Name);
+            go.transform.SetParent(clone.transform, false);
+            go.transform.localPosition = part.Position;
+            go.AddComponent<MeshFilter>().sharedMesh = part.Mesh;
+            go.AddComponent<MeshRenderer>().sharedMaterials = slots;
+        }
+    }
+
     static void RegisterPiece()
     {
         if (_registered)
@@ -175,6 +265,7 @@ public static class TeamWard
             area.m_name = Display;
             area.m_enabledByDefault = true;
             area.m_radius = TeamsConfig.TeamWardRadius;
+            ApplyModel(clone);
             clone.AddComponent<TeamWardVisual>();
 
             LocalizationManager.Instance.GetLocalization().AddTranslation("English", new Dictionary<string, string>

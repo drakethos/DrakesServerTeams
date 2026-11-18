@@ -1,0 +1,640 @@
+{
+  "name": "V-06 team banners and flags with team logos, and the Team Ward with its moving parts",
+  "description": "Banners (standing, hanging) and flags for two teams carry their team logos; a vanilla chest beside them for comparison; the Team Ward on, off, and half-way through a capture by the other team (the rune ring changes color clockwise).",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      },
+      "expect": "sample-banner.png",
+      "label": "a custom icon file in the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "ember",
+        "title": "Ember",
+        "color": "#E67E22",
+        "icon": "shield",
+        "glow": ""
+      },
+      "label": "team Ember: #E67E22, icon shield"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "tide",
+        "title": "Tide",
+        "color": "#2980B9",
+        "icon": "star",
+        "glow": ""
+      },
+      "label": "team Tide: #2980B9, icon star"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "moss",
+        "title": "Moss",
+        "color": "#27AE60",
+        "icon": "sample-banner",
+        "glow": ""
+      },
+      "label": "team Moss: #27AE60, icon sample-banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "dusk",
+        "title": "Dusk",
+        "color": "#8E44AD",
+        "icon": "diamond",
+        "glow": "#F1C40F"
+      },
+      "label": "team Dusk: #8E44AD, icon diamond"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.5
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setlogo ember shield:#E67E22:#FFFFFF:0.06|star:#FFFFFF:0:0.05:0.5:0:0"
+      },
+      "contains": "new logo",
+      "label": "Ember gets a logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.adminCommand",
+      "args": {
+        "line": "setlogo tide circle:#2980B9:#FFFFFF:0.08|moon:#FFFFFF:0:0:0.55:0:0"
+      },
+      "contains": "new logo",
+      "label": "Tide gets a logo"
+    },
+    {
+      "do": "hook",
+      "name": "teams.goClearing",
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamBannerStanding",
+      "dz": 3.0,
+      "as": "standA"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "place",
+      "prefab": "piece_chest_wood",
+      "dz": 3.0,
+      "dx": 1.8,
+      "as": "chestRef"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "face",
+      "target": "standA"
+    },
+    {
+      "do": "teleport",
+      "dz": -3.5
+    },
+    {
+      "do": "face",
+      "target": "standA"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-banner-standing-ember",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "tide"
+      },
+      "expect": "tide"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamFlag",
+      "dz": 3.0,
+      "as": "flagB"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "face",
+      "target": "flagB"
+    },
+    {
+      "do": "teleport",
+      "dz": -3.5
+    },
+    {
+      "do": "face",
+      "target": "flagB"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-flag-tide",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamBannerHanging",
+      "dz": 3.2,
+      "as": "hangA"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "face",
+      "target": "hangA"
+    },
+    {
+      "do": "teleport",
+      "dz": -3.5
+    },
+    {
+      "do": "face",
+      "target": "hangA"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-banner-hanging-ember",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "piece_chest_wood",
+      "dz": 4.0,
+      "as": "vanilla"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "face",
+      "target": "vanilla"
+    },
+    {
+      "do": "teleport",
+      "dz": -3.5
+    },
+    {
+      "do": "face",
+      "target": "vanilla"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-vanilla-chest-compare",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 6.0,
+      "as": "wardOn"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "face",
+      "target": "wardOn"
+    },
+    {
+      "do": "teleport",
+      "dz": -3.5
+    },
+    {
+      "do": "face",
+      "target": "wardOn"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-on-day",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.12
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-on-night",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "tide"
+      },
+      "expect": "tide"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 6.0,
+      "as": "wardOff"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardSet",
+      "args": {
+        "ward": "wardOff",
+        "power": false
+      },
+      "contains": "power off"
+    },
+    {
+      "do": "wait",
+      "seconds": 2.6
+    },
+    {
+      "do": "face",
+      "target": "wardOff"
+    },
+    {
+      "do": "teleport",
+      "dz": -3.5
+    },
+    {
+      "do": "face",
+      "target": "wardOff"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-off-night",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "give",
+      "prefab": "TeamBannerCarry",
+      "equip": true
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-banner-carried",
+      "clean": true
+    },
+    {
+      "do": "teleport",
+      "dx": 14,
+      "dz": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 6.0,
+      "as": "wardCap"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardSet",
+      "args": {
+        "ward": "wardCap",
+        "capture": 0.5,
+        "captor": "tide"
+      },
+      "contains": "capture 0.50"
+    },
+    {
+      "do": "wait",
+      "seconds": 3.5
+    },
+    {
+      "do": "face",
+      "target": "wardCap"
+    },
+    {
+      "do": "teleport",
+      "dz": -3.5
+    },
+    {
+      "do": "face",
+      "target": "wardCap"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "teams-ward-capture-half-night",
+      "clean": true
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

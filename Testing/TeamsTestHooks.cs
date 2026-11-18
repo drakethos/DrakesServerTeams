@@ -777,6 +777,599 @@ internal static class TeamsTestHooks
     [TestHook("teams.wardLook")]
     static string WardLook(GameObject? ward) => AreaOf(ward).GetComponent<TeamWardVisual>()?.Describe() ?? "no visual";
 
+    /// <summary>The ward's Blender model as built: "model|shards 4|halos 6|runes 12" (or "no model").</summary>
+    [TestHook("teams.wardModel")]
+    static string WardModel(GameObject? ward)
+    {
+        var area = AreaOf(ward);
+        if (area.GetComponent<TeamWardVisual>() is not { HasModel: true })
+            return "no model";
+        int Count(string prefix)
+        {
+            var n = 0;
+            foreach (var r in area.GetComponentsInChildren<MeshRenderer>(true))
+                if (r.gameObject.name.StartsWith(prefix))
+                    n++;
+            return n;
+        }
+        return $"model|shards {Count("shard_")}|halos {Count("halo_")}|runes {Count("rune_")}";
+    }
+
+    /// <summary>The ward's animated state: "on|open 1.00|halos 6|captured 0/12|capture 0.00". Waits are the caller's job (it animates).</summary>
+    [TestHook("teams.wardState")]
+    static string WardState(GameObject? ward) => AreaOf(ward).GetComponent<TeamWardVisual>()?.State() ?? "no visual";
+
+    /// <summary>Admin: set a team's ward figure (as <c>teams setfigure</c>). Returns the figure the team has afterwards.</summary>
+    [TestHook("teams.setFigure")]
+    static string SetFigure(Dictionary<string, object?> args)
+    {
+        NeedAuthority();
+        TeamRegistry.Instance.SetTeamFigure(S(args, "team"), S(args, "figure"));
+        return TeamRegistry.Instance.GetTeam(S(args, "team"))?.Figure ?? "";
+    }
+
+    /// <summary>The figure standing on the ward and the parts it is made of: "wolf|figure_wolf:2 slots 844 tris".</summary>
+    [TestHook("teams.wardFigure")]
+    static string WardFigureNow(GameObject? ward)
+    {
+        var v = AreaOf(ward).GetComponent<TeamWardVisual>();
+        if (v == null)
+            return "no visual";
+        var parts = new List<string>();
+        foreach (var f in v.GetComponentsInChildren<MeshFilter>(true))
+            if (f.transform.parent != null && f.transform.parent.name.EndsWith("_holder"))
+                parts.Add($"{f.name}:{f.GetComponent<MeshRenderer>().sharedMaterials.Length} slots {f.sharedMesh.triangles.Length / 3} tris");
+        return v.Figure + "|" + string.Join(",", parts) + "|channels " + v.ChannelCount;
+    }
+
+    /// <summary>Diagnostics: the light effects on a ward: every particle system (playing, particle count, start color, size) and light (color, intensity, range).</summary>
+    [TestHook("teams.lightInfo")]
+    static string LightInfo(GameObject? ward)
+    {
+        var area = AreaOf(ward);
+        var parts = new List<string>();
+        foreach (var ps in area.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            var main = ps.main;
+            var r = ps.GetComponent<ParticleSystemRenderer>();
+            var chain = new List<string>();
+            for (var t = ps.transform; t != null && t != area.transform; t = t.parent)
+                chain.Add(t.name + (t.gameObject.activeSelf ? "+" : "-"));
+            parts.Add($"PS {string.Join("<", chain)} playing {ps.isPlaying} n {ps.particleCount} active {ps.gameObject.activeInHierarchy} rend {(r != null && r.enabled)} color {main.startColor.color} size {main.startSize.constant:0.00} life {main.startLifetime.constant:0.0} rate {ps.emission.rateOverTime.constant:0.0} pos {ps.transform.localPosition:F2} mat {(r != null && r.sharedMaterial != null ? r.sharedMaterial.name : "-")}");
+        }
+        string Eff(string label, GameObject? g) => g == null ? label + " none" : $"{label} {g.name}{(g.activeSelf ? "+" : "-")}";
+        parts.Add(Eff("enabledEffect", area.m_enabledEffect) + ", " + Eff("flashEffect", area.m_flashEffect.ToString() == "null" ? null : null) + ", " + Eff("areaMarker", area.m_areaMarker != null ? area.m_areaMarker.gameObject : null)
+                  + $", enabledFlag {area.GetComponent<ZNetView>()?.GetZDO()?.GetBool("enabled", false)}, IsEnabled {area.IsEnabled()}");
+        foreach (var l in area.GetComponentsInChildren<Light>(true))
+            parts.Add($"LIGHT {l.name} enabled {l.enabled} color {l.color} intensity {l.intensity:0.00} range {l.range:0.0} pos {l.transform.localPosition:F2}");
+        return string.Join(" | ", parts);
+    }
+
+    /// <summary>Diagnostics: the figure's flow channels as the game sees them (see TeamWardVisual.DescribeChannels).</summary>
+    [TestHook("teams.channelInfo")]
+    static string ChannelInfo(GameObject? ward) => AreaOf(ward).GetComponent<TeamWardVisual>()?.DescribeChannels() ?? "no visual";
+
+    /// <summary>Server side: set the ward's power / capture display directly (what the War extension would do). Returns what was set.</summary>
+    [TestHook("teams.wardSet")]
+    static string WardSet(GameObject? ward, Dictionary<string, object?> args)
+    {
+        var area = AreaOf(ward);
+        if (args.ContainsKey("power"))
+            TeamWard.SetPower(area, B(args, "power", true));
+        if (args.ContainsKey("capture"))
+            TeamWard.SetCapture(area, F(args, "capture"), S(args, "captor"));
+        return $"power {(TeamWard.IsPowered(area) ? "on" : "off")}|capture {TeamWard.CaptureProgress(area):0.00}|captor {TeamWard.Captor(area) ?? "none"}";
+    }
+
+    /// <summary>The carried banner: "item|carried <team>" (item known to the game, and held by the local player with its cloth painted for this team).</summary>
+    [TestHook("teams.carryInfo")]
+    static string CarryInfo()
+    {
+        var known = ObjectDB.instance?.GetItemPrefab(TeamBanners.Carry) != null;
+        var v = P.GetComponentInChildren<CarriedBannerVisual>(true);
+        return $"{(known ? "item" : "no item")}|{(v != null ? "carried " + v.Describe() : "not carried")}";
+    }
+
+    /// <summary>The logo designer's draft: "team|sel N|layers N|dirty or clean|spec".</summary>
+    [TestHook("teams.logoState")]
+    static string LogoStateHook() => LogoTab.Describe();
+
+    // ---- spike: trophies as ward figures with swapped materials ------------------------------------------
+
+    static readonly List<GameObject> SpikeObjects = new();
+    static Vector3 SpikeFwd = Vector3.forward, SpikeCenter;
+
+    /// <summary>
+    /// Test ground: switch off every tree, bush, rock and standing stone within a radius of the player (this client only, for the picture; terrain, pieces
+    /// and characters stay). Args: radius (20). Returns how many objects went.
+    /// </summary>
+    [TestHook("teams.clearArea")]
+    static string ClearArea(Dictionary<string, object?> args)
+    {
+        var radius = args.ContainsKey("radius") ? F(args, "radius") : 20f;
+        var count = 0;
+        if (ClutterSystem.instance != null)
+            ClutterSystem.instance.enabled = false;   // the grass
+        foreach (var c in Physics.OverlapSphere(P.transform.position, radius, ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (c == null || c is TerrainCollider || LayerMask.LayerToName(c.gameObject.layer) == "terrain")
+                continue;
+            if (c.GetComponentInParent<Character>() != null || c.GetComponentInParent<Piece>() != null || c.GetComponentInParent<Heightmap>() != null)
+                continue;
+            var view = c.GetComponentInParent<ZNetView>();
+            var go = view != null ? view.gameObject : c.gameObject;
+            if (go.activeSelf)
+            {
+                go.SetActive(false);
+                count++;
+            }
+        }
+        return count.ToString();
+    }
+
+    /// <summary>
+    /// Render a ward with a camera of its own to a PNG, from the first direction (every 30 degrees) with nothing solid in between, so trees and the
+    /// player do not block the view. Args: ward, file, back (3.2), height (1.5). Returns the path and the direction used.
+    /// </summary>
+    [TestHook("teams.wardShot")]
+    static string WardShot(GameObject? ward, Dictionary<string, object?> args)
+    {
+        var area = AreaOf(ward);
+        var main = GameCamera.instance != null ? GameCamera.instance.GetComponent<Camera>() : Camera.main;
+        if (main == null)
+            return "no camera";
+        var back = args.ContainsKey("back") ? F(args, "back") : 3.2f;
+        var height = args.ContainsKey("height") ? F(args, "height") : 1.5f;
+        var focus = area.transform.position + Vector3.up * 1.1f;
+        var best = -1;
+        var pos = Vector3.zero;
+        if (args.ContainsKey("yaw"))
+        {
+            best = (int)F(args, "yaw");
+            pos = area.transform.position + Quaternion.Euler(0, best, 0) * Vector3.forward * back + Vector3.up * height;
+        }
+        for (var yaw = 0; best < 0 && yaw < 360; yaw += 30)
+        {
+            var p = area.transform.position + Quaternion.Euler(0, yaw, 0) * Vector3.forward * back + Vector3.up * height;
+            if (!Physics.Linecast(focus, p, out _, ~0, QueryTriggerInteraction.Ignore))
+            {
+                best = yaw;
+                pos = p;
+                break;
+            }
+        }
+        if (best < 0)
+        {
+            best = 0;
+            pos = area.transform.position + Vector3.forward * back + Vector3.up * height;
+        }
+        var go = new GameObject("wardCam");
+        var cam = go.AddComponent<Camera>();
+        cam.CopyFrom(main);
+        cam.clearFlags = CameraClearFlags.Skybox;
+        cam.nearClipPlane = 0.1f;
+        go.transform.position = pos;
+        go.transform.rotation = Quaternion.LookRotation(focus - pos);
+        var rt = new RenderTexture(1280, 720, 24);
+        cam.targetTexture = rt;
+        cam.Render();
+        var prev = RenderTexture.active;
+        RenderTexture.active = rt;
+        var tex = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+        tex.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0);
+        tex.Apply();
+        RenderTexture.active = prev;
+        var dir = System.IO.Path.Combine(BepInEx.Paths.ConfigPath, "DrakesServerTeams-spike");
+        System.IO.Directory.CreateDirectory(dir);
+        var path = System.IO.Path.Combine(dir, S(args, "file") + ".png");
+        System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+        cam.targetTexture = null;
+        UnityEngine.Object.Destroy(rt);
+        UnityEngine.Object.Destroy(tex);
+        UnityEngine.Object.Destroy(go);
+        return "yaw " + best;
+    }
+
+    /// <summary>Spike: render the last trophyRow with a camera of its own (no trees in the way) to a PNG. Args: file, back (7), height (1.4).</summary>
+    [TestHook("teams.spikeShot")]
+    static string SpikeShot(Dictionary<string, object?> args)
+    {
+        var main = GameCamera.instance != null ? GameCamera.instance.GetComponent<Camera>() : Camera.main;
+        if (main == null)
+            return "no camera";
+        var go = new GameObject("spikeCam");
+        var cam = go.AddComponent<Camera>();
+        cam.CopyFrom(main);
+        cam.clearFlags = CameraClearFlags.Skybox;
+        var back = args.ContainsKey("back") ? F(args, "back") : 7f;
+        var height = args.ContainsKey("height") ? F(args, "height") : 1.4f;
+        go.transform.position = SpikeCenter - SpikeFwd * back + Vector3.up * height;
+        go.transform.rotation = Quaternion.LookRotation((SpikeCenter + Vector3.up * 1.0f) - go.transform.position);
+        var rt = new RenderTexture(1280, 720, 24);
+        cam.targetTexture = rt;
+        cam.Render();
+        var prev = RenderTexture.active;
+        RenderTexture.active = rt;
+        var tex = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+        tex.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0);
+        tex.Apply();
+        RenderTexture.active = prev;
+        var dir = System.IO.Path.Combine(BepInEx.Paths.ConfigPath, "DrakesServerTeams-spike");
+        System.IO.Directory.CreateDirectory(dir);
+        var path = System.IO.Path.Combine(dir, S(args, "file") + ".png");
+        System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+        cam.targetTexture = null;
+        UnityEngine.Object.Destroy(rt);
+        UnityEngine.Object.Destroy(tex);
+        UnityEngine.Object.Destroy(go);
+        return path;
+    }
+
+    static Material? FindMat(string name)
+    {
+        Material? best = null;
+        foreach (var m in Resources.FindObjectsOfTypeAll<Material>())
+        {
+            if (m == null || m.name.IndexOf(name, StringComparison.OrdinalIgnoreCase) < 0)
+                continue;
+            if (m.name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                return m;
+            best ??= m;
+        }
+        return best;
+    }
+
+    /// <summary>Spike: names (and shaders) of loaded materials that contain any of the comma-separated words.</summary>
+    [TestHook("teams.findMaterials")]
+    static string FindMaterials(Dictionary<string, object?> args)
+    {
+        var words = S(args, "words").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        var found = new SortedSet<string>();
+        foreach (var m in Resources.FindObjectsOfTypeAll<Material>())
+        {
+            if (m == null)
+                continue;
+            foreach (var w in words)
+                if (m.name.IndexOf(w.Trim(), StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    found.Add(m.name + " [" + (m.shader != null ? m.shader.name : "?") + "]");
+                    break;
+                }
+        }
+        return found.Count + ": " + string.Join("; ", System.Linq.Enumerable.Take(found, 80));
+    }
+
+    /// <summary>
+    /// Spike: a row of one trophy on little stone plinths in front of the player, one per material in "mats" (comma list of material
+    /// names, "orig" keeps the trophy's own look). Args: prefab, mats, scale (1.6), spacing (1.6), dist (6), yaw (0). Returns what each matched.
+    /// </summary>
+    [TestHook("teams.trophyRow")]
+    static string TrophyRow(Dictionary<string, object?> args)
+    {
+        var names = S(args, "prefabs").Length > 0 ? S(args, "prefabs").Split(',') : new[] { S(args, "prefab") };
+        var mats = S(args, "mats").Length > 0 ? S(args, "mats").Split(',') : new[] { "orig" };
+        var count = Math.Max(names.Length, mats.Length);
+        var lift = F(args, "lift");
+        var withPlinth = B(args, "plinth", true);
+        var baseOrigin = B(args, "base", false);
+        var scale = args.ContainsKey("scale") ? F(args, "scale") : 1.6f;
+        var spacing = args.ContainsKey("spacing") ? F(args, "spacing") : 1.6f;
+        var dist = args.ContainsKey("dist") ? F(args, "dist") : 6f;
+        var yaw = F(args, "yaw");
+        var pl = P.transform;
+        var cam = Camera.main != null ? Camera.main.transform : pl;
+        var fwd = Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized;
+        var right = Vector3.Cross(Vector3.up, fwd);
+        var plinthMat = FindMat("Guardstone_Oden_mat");
+        var report = new List<string>();
+        for (var i = 0; i < count; i++)
+        {
+            var spec = mats[Math.Min(i, mats.Length - 1)].Trim();
+            var pfName = names[Math.Min(i, names.Length - 1)].Trim();
+            var pf = FindAnyPrefab(pfName);
+            if (pf == null)
+            {
+                report.Add("no prefab " + pfName);
+                continue;
+            }
+            var allowed = new HashSet<Renderer>();
+            var lods = pf.GetComponent<LODGroup>();
+            if (lods != null && lods.lodCount > 0)
+                foreach (var r in lods.GetLODs()[0].renderers)
+                    if (r != null)
+                        allowed.Add(r);
+            var pos = pl.position + fwd * dist + right * ((i - (count - 1) / 2f) * spacing);
+            pos.y = ZoneSystem.instance.GetGroundHeight(pos) + lift;
+            if (i == 0)
+            {
+                SpikeFwd = fwd;
+                SpikeCenter = pl.position + fwd * dist;
+                SpikeCenter.y = pos.y;
+            }
+            var root = new GameObject("TrophySpike_" + spec);
+            root.transform.position = pos;
+            SpikeObjects.Add(root);
+
+            if (withPlinth)
+            {
+                var plinth = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                UnityEngine.Object.Destroy(plinth.GetComponent<Collider>());
+                plinth.transform.SetParent(root.transform, false);
+                plinth.transform.localScale = new Vector3(0.9f, 0.5f, 0.9f);
+                plinth.transform.localPosition = new Vector3(0, 0.25f, 0);
+                if (plinthMat != null)
+                    plinth.GetComponent<MeshRenderer>().sharedMaterial = plinthMat;
+            }
+
+            var statue = new GameObject("statue");
+            statue.transform.SetParent(root.transform, false);
+            statue.transform.localPosition = new Vector3(0, (withPlinth ? 0.5f : 0f) + (baseOrigin ? 0f : 0.3f * scale), 0);
+            statue.transform.rotation = Quaternion.LookRotation(-fwd) * Quaternion.Euler(0, yaw, 0);
+            statue.transform.localScale = Vector3.one * scale;
+
+            Material? swap = null;
+            if (!spec.Equals("orig", StringComparison.OrdinalIgnoreCase))
+            {
+                swap = FindMat(spec);
+                if (swap == null)
+                    report.Add(spec + " -> not found");
+            }
+            foreach (var mf in pf.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var mr = mf.GetComponent<MeshRenderer>();
+                if (mr == null || mf.sharedMesh == null || (allowed.Count > 0 && !allowed.Contains(mr)))
+                    continue;
+                var m = pf.transform.worldToLocalMatrix * mf.transform.localToWorldMatrix;
+                var go = new GameObject(mf.name);
+                go.transform.SetParent(statue.transform, false);
+                go.transform.localPosition = m.GetColumn(3);
+                go.transform.localRotation = m.rotation;
+                go.transform.localScale = m.lossyScale;
+                go.AddComponent<MeshFilter>().sharedMesh = mf.sharedMesh;
+                var slots = (Material[])mr.sharedMaterials.Clone();
+                if (swap != null)
+                    for (var s = 0; s < slots.Length; s++)
+                        slots[s] = swap;
+                var renderer = go.AddComponent<MeshRenderer>();
+                renderer.sharedMaterials = slots;
+                if (swap != null && swap.name.Contains("Oden_mat"))
+                {
+                    var dark = new MaterialPropertyBlock();
+                    dark.SetColor("_Color", new Color(0.14f, 0.14f, 0.19f, 1f)); // what the ward does to the guard stone
+                    renderer.SetPropertyBlock(dark);
+                }
+                if (swap != null || i == 0 || names.Length > 1)
+                    report.Add(pfName + " " + (swap != null ? spec + " -> " + swap.name + " [" + (swap.shader != null ? swap.shader.name : "?") + "]" : "orig: " + string.Join("+", System.Linq.Enumerable.Select(slots, x => x != null ? x.name + " [" + (x.shader != null ? x.shader.name : "?") + "]" : "null"))) + " bounds " + (mf.sharedMesh.bounds.size * mf.transform.lossyScale.x).ToString("F2"));
+            }
+            if (S(args, "ring").Length > 0)
+            {
+                var glowMat = FindMat("Guardstone_OdenGlow_mat");
+                var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                UnityEngine.Object.Destroy(ring.GetComponent<Collider>());
+                ring.transform.SetParent(root.transform, false);
+                ring.transform.localScale = new Vector3(1.7f, 0.012f, 1.7f);
+                ring.transform.localPosition = new Vector3(0, (withPlinth ? 0.5f : 0f) + 0.02f, 0);
+                var rr = ring.GetComponent<MeshRenderer>();
+                if (glowMat != null)
+                    rr.sharedMaterial = glowMat;
+                var glow = new MaterialPropertyBlock();
+                var gc = TeamIcons.ParseColor(S(args, "ring"));
+                glow.SetColor("_EmissionColor", gc * 4f);
+                glow.SetColor("_Color", gc);
+                rr.SetPropertyBlock(glow);
+            }
+        }
+        return string.Join(" | ", report);
+    }
+
+    static GameObject? FindAnyPrefab(string name)
+    {
+        var item = ObjectDB.instance != null ? ObjectDB.instance.GetItemPrefab(name) : null;
+        if (item != null)
+            return item;
+        return ZNetScene.instance != null ? ZNetScene.instance.GetPrefab(name) : null;
+    }
+
+    /// <summary>Spike: names of game prefabs that contain any of the comma-separated words.</summary>
+    [TestHook("teams.findPrefabs")]
+    static string FindPrefabs(Dictionary<string, object?> args)
+    {
+        var words = S(args, "words").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        var found = new SortedSet<string>();
+        foreach (var go in ZNetScene.instance.m_prefabs)
+            if (go != null)
+                foreach (var w in words)
+                    if (go.name.IndexOf(w.Trim(), StringComparison.OrdinalIgnoreCase) >= 0) { found.Add(go.name); break; }
+        return found.Count + ": " + string.Join(", ", found);
+    }
+
+    /// <summary>Spike: hide (or show again) the vegetation layer for the main camera, so trees do not block a picture.</summary>
+    [TestHook("teams.hideVegetation")]
+    static string HideVegetation(Dictionary<string, object?> args)
+    {
+        var layer = LayerMask.NameToLayer("vegetation");
+        if (layer < 0 || Camera.main == null)
+            return "no layer or camera";
+        if (B(args, "hide", true))
+            Camera.main.cullingMask &= ~(1 << layer);
+        else
+            Camera.main.cullingMask |= 1 << layer;
+        return "mask " + Camera.main.cullingMask;
+    }
+
+    /// <summary>Spike diagnostics: what a prefab is made of: components on the root, then every child with its renderer materials and size.</summary>
+    [TestHook("teams.prefabInfo")]
+    static string PrefabInfo(Dictionary<string, object?> args)
+    {
+        var pf = FindAnyPrefab(S(args, "prefab"));
+        if (pf == null)
+            return "no prefab " + S(args, "prefab");
+        var parts = new List<string>
+        {
+            "root: " + string.Join(",", System.Linq.Enumerable.Select(pf.GetComponents<Component>(), c => c == null ? "missing" : c.GetType().Name)),
+        };
+        var piece = pf.GetComponent<Piece>();
+        if (piece != null)
+            parts.Add($"piece '{piece.m_name}' category {piece.m_category} cultivated {piece.m_cultivatedGroundOnly}");
+        foreach (var t in pf.GetComponentsInChildren<Transform>(true))
+        {
+            if (t == pf.transform)
+                continue;
+            var r = t.GetComponent<Renderer>();
+            var mf = t.GetComponent<MeshFilter>();
+            parts.Add(t.name + (r != null ? " [" + string.Join("+", System.Linq.Enumerable.Select(r.sharedMaterials, m => m != null ? m.name : "null")) + "]" : "")
+                      + (mf != null && mf.sharedMesh != null ? " " + mf.sharedMesh.bounds.size.ToString("F2") + " v" + mf.sharedMesh.vertexCount : "")
+                      + (t.GetComponent<Light>() != null ? " LIGHT" : "") + (t.GetComponent<ParticleSystem>() != null ? " PS" : ""));
+        }
+        return string.Join(" | ", parts);
+    }
+
+    [TestHook("teams.trophyClear")]
+    static string TrophyClear()
+    {
+        var n = SpikeObjects.Count;
+        foreach (var go in SpikeObjects)
+            if (go != null)
+                UnityEngine.Object.Destroy(go);
+        SpikeObjects.Clear();
+        return n.ToString();
+    }
+
+    /// <summary>Diagnostics: how an item prefab sits in the hand: its attach child and every mesh under it (position, rotation, scale, bounds size).</summary>
+    [TestHook("teams.itemAxes")]
+    static string ItemAxes(Dictionary<string, object?> args)
+    {
+        var prefab = ObjectDB.instance?.GetItemPrefab(S(args, "prefab"));
+        if (prefab == null)
+            return "no such item";
+        var attach = prefab.transform.Find("attach");
+        var root = attach != null ? attach : prefab.transform;
+        var parts = new List<string> { $"attach={(attach != null ? "yes" : "no")} localEuler={root.localEulerAngles} localPos={root.localPosition}" };
+        foreach (var f in root.GetComponentsInChildren<MeshFilter>(true))
+        {
+            if (f.sharedMesh == null)
+                continue;
+            var b = f.sharedMesh.bounds;
+            parts.Add($"{f.name}: pos {f.transform.localPosition} euler {f.transform.localEulerAngles} scale {f.transform.localScale} size {b.size} center {b.center}");
+        }
+        return string.Join(" || ", parts);
+    }
+
+    /// <summary>Diagnostics: every renderer under a placed banner, with its materials and shaders and where it is.</summary>
+    [TestHook("teams.bannerRenderers")]
+    static string BannerRenderers(GameObject? target = null)
+    {
+        var root = target != null ? target.GetComponentInParent<ZNetView>() : null;
+        if (root == null)
+            return "no banner";
+        var parts = new List<string>();
+        foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+        {
+            var mats = new List<string>();
+            foreach (var m in r.sharedMaterials)
+                mats.Add(m == null ? "null" : m.name + "/" + (m.shader != null ? m.shader.name : "-"));
+            parts.Add($"{r.GetType().Name} {r.gameObject.name} en={r.enabled} at {r.bounds.center.y - root.transform.position.y:0.00} size {r.bounds.size.x:0.00}x{r.bounds.size.y:0.00}x{r.bounds.size.z:0.00} [{string.Join(",", mats)}]");
+        }
+        return string.Join(" || ", parts);
+    }
+
+    /// <summary>Diagnostics: give one material slot of a placed banner another slot's material ("slot" gets the material of "with").</summary>
+    [TestHook("teams.bannerSwap")]
+    static string BannerSwap(GameObject? target, Dictionary<string, object?> args)
+    {
+        var v = target != null ? target.GetComponentInParent<TeamBannerVisual>() ?? target.GetComponentInChildren<TeamBannerVisual>() : null;
+        var rend = v != null ? v.transform.Find("model")?.GetComponent<MeshRenderer>() : null;
+        if (rend == null)
+            return "no banner";
+        var mats = rend.sharedMaterials;
+        mats[(int)F(args, "slot")] = mats[(int)F(args, "with")];
+        rend.sharedMaterials = mats;
+        return "swapped";
+    }
+
+    /// <summary>Shader names and support of every material on a banner (to find magenta surfaces): "name:shader:supported".</summary>
+    [TestHook("teams.bannerShaders")]
+    static string BannerShaders(GameObject? target = null)
+    {
+        var v = target != null ? target.GetComponentInParent<TeamBannerVisual>() ?? target.GetComponentInChildren<TeamBannerVisual>() : null;
+        var rend = v != null ? v.transform.Find("model")?.GetComponent<MeshRenderer>() : null;
+        if (rend == null)
+            return "no banner";
+        var parts = new List<string>();
+        var mesh = rend.GetComponent<MeshFilter>().sharedMesh;
+        var mats = rend.sharedMaterials;
+        for (var i = 0; i < mats.Length; i++)
+        {
+            var m = mats[i];
+            var sb = mesh.GetSubMesh(i).bounds;
+            parts.Add(m == null ? "null" : $"{m.name}:{(m.shader != null ? m.shader.name : "no shader")}:{(m.shader != null && m.shader.isSupported)}:y {sb.min.y:0.00}..{sb.max.y:0.00}");
+        }
+        return string.Join("|", parts);
+    }
+
+    /// <summary>How many of the three banner / flag pieces are in the Hammer's list and known to the game (3 = all).</summary>
+    [TestHook("teams.bannerPieces")]
+    static int BannerPieces()
+    {
+        var hammer = ObjectDB.instance?.GetItemPrefab("Hammer")?.GetComponent<ItemDrop>();
+        var pieces = hammer?.m_itemData.m_shared.m_buildPieces;
+        if (pieces == null)
+            return -1;
+        var n = 0;
+        foreach (var name in new[] { TeamBanners.Hanging, TeamBanners.Standing, TeamBanners.Flag })
+        {
+            if (ZNetScene.instance?.GetPrefab(name) == null)
+                continue;
+            foreach (var p in pieces.m_pieces)
+                if (p != null && p.name == name)
+                {
+                    n++;
+                    break;
+                }
+        }
+        return n;
+    }
+
+    /// <summary>A placed banner: "team id|cloth slots painted|mesh triangles|bounds height".</summary>
+    [TestHook("teams.bannerLook")]
+    static string BannerLook(GameObject? target = null)
+    {
+        var v = target != null ? target.GetComponentInParent<TeamBannerVisual>() ?? target.GetComponentInChildren<TeamBannerVisual>() : null;
+        if (v == null)
+            return "no banner";
+        var model = v.transform.Find("model");
+        var filter = model != null ? model.GetComponent<MeshFilter>() : null;
+        var rend = model != null ? model.GetComponent<MeshRenderer>() : null;
+        var painted = 0;
+        if (rend != null)
+        {
+            var block = new MaterialPropertyBlock();
+            for (var i = 0; i < rend.sharedMaterials.Length; i++)
+            {
+                if (rend.sharedMaterials[i] == null || rend.sharedMaterials[i].name != "TeamCloth")
+                    continue;
+                rend.GetPropertyBlock(block, i);
+                if (block.GetTexture("_MainTex") != null)
+                    painted++;
+            }
+        }
+        var tris = filter != null && filter.sharedMesh != null ? filter.sharedMesh.triangles.Length / 3 : 0;
+        var height = filter != null && filter.sharedMesh != null ? filter.sharedMesh.bounds.size.y : 0f;
+        return $"{v.Describe()}|{painted}|{tris}|{height:0.0}";
+    }
+
+    /// <summary>The cloth picture for a team as the banner would show it: size and one pixel (x, y in 0..1, y up), "#RRGGBB".</summary>
+    [TestHook("teams.bannerPixel")]
+    static string BannerPixel(Dictionary<string, object?> args)
+    {
+        var team = TeamsAPI.GetTeam(S(args, "team"));
+        var shape = string.Equals(S(args, "shape"), "wide", StringComparison.OrdinalIgnoreCase) ? BannerTextures.Shape.Wide : BannerTextures.Shape.Tall;
+        BannerTextures.ClearCache();
+        var tex = BannerTextures.Get(team, shape);
+        var c = tex.GetPixel((int)(F(args, "x") * (tex.width - 1)), (int)(F(args, "y") * (tex.height - 1)));
+        return $"{tex.width}x{tex.height}|#{(int)(c.r * 255 + 0.5f):X2}{(int)(c.g * 255 + 0.5f):X2}{(int)(c.b * 255 + 0.5f):X2}";
+    }
+
     /// <summary>Is the Team Ward in the Hammer's piece list (and a prefab the game knows)?</summary>
     [TestHook("teams.hasWardPiece")]
     static bool HasWardPiece()
@@ -816,6 +1409,8 @@ internal static class TeamsTestHooks
     [TestHook("teams.openPanel")]
     static bool OpenPanel(Dictionary<string, object?> args)
     {
+        if (args.ContainsKey("tab") && Enum.TryParse<PanelTab>(S(args, "tab"), true, out var tab))
+            AdminPanel.SetTab(tab);
         if (B(args, "open", true) != AdminPanel.IsOpen)
             AdminPanel.Toggle();
         return AdminPanel.IsOpen;
@@ -848,13 +1443,17 @@ internal static class TeamsTestHooks
         var area = AreaOf(ward);
         AdminPanel.Close();
         ((Interactable)area).Interact(P, false, B(args, "alt", false));
-        return AdminPanel.IsOpen && AdminPanel.Tab == PanelTab.Ward;
+        if (AdminPanel.IsOpen && AdminPanel.Tab == PanelTab.Ward)
+            return true;
+        // The shared Lock menu counts when this player can change the ward. A locked look does not.
+        return SharedWardMenu.IsOpen && !SharedWardMenu.ControlsLocked;
     }
 
     [TestHook("teams.closeWardPanel")]
     static bool CloseWardPanel()
     {
         AdminPanel.Close();
+        SharedWardMenu.Close();
         return AdminPanel.IsOpen;
     }
 
@@ -926,13 +1525,18 @@ internal static class TeamsTestHooks
         return "RenameIt not loaded";
     }
 
-    /// <summary>Is the Team Ward settings window open?</summary>
+    /// <summary>Is the Team Ward admin window open? The shared Lock menu is a different window.</summary>
     [TestHook("teams.wardPanelOpen")]
     static bool WardPanelIsOpen() => AdminPanel.IsOpen && AdminPanel.Tab == PanelTab.Ward;
 
-    /// <summary>The panel tab showing, or "closed".</summary>
+    /// <summary>The admin panel tab, or "Ward" while the shared Lock menu is showing that ward, or "closed".</summary>
     [TestHook("teams.panelTab")]
-    static string PanelTabNow() => AdminPanel.IsOpen ? AdminPanel.Tab.ToString() : "closed";
+    static string PanelTabNow()
+    {
+        if (SharedWardMenu.IsOpen)
+            return "Ward";
+        return AdminPanel.IsOpen ? AdminPanel.Tab.ToString() : "closed";
+    }
 
     /// <summary>Does the game still read attack and look input right now? (PlayerController.TakeInput, the check a click on a panel must fail.)</summary>
     [TestHook("teams.gameTakesInput")]
@@ -946,4 +1550,77 @@ internal static class TeamsTestHooks
         var result = m.Invoke(pc, ps.Length == 0 ? null : new object[] { true });
         return result is bool b ? (b ? "yes" : "no") : "?";
     }
+
+    // ---- logos -----------------------------------------------------------------------------------------------
+
+    /// <summary>Parse a logo spec and write it back (canonical form), or "invalid: why".</summary>
+    [TestHook("teams.logoRoundTrip")]
+    static string LogoRoundTrip(Dictionary<string, object?> args) =>
+        LogoSpec.TryParse(S(args, "spec"), out var spec, out var error) ? spec.ToString() : "invalid: " + error;
+
+    /// <summary>Render a spec small and read one pixel: x and y in -1..1 (y up). Returns "#RRGGBB" or "clear" when transparent.</summary>
+    [TestHook("teams.logoPixel")]
+    static string LogoPixel(Dictionary<string, object?> args)
+    {
+        if (!LogoSpec.TryParse(S(args, "spec"), out var spec, out var error))
+            return "invalid: " + error;
+        const int size = 64;
+        var px = new Color32[size * size];
+        LogoRenderer.RenderInto(spec, size, px);
+        var ix = Mathf.Clamp((int)((F(args, "x") * 0.5f + 0.5f) * size), 0, size - 1);
+        var iy = Mathf.Clamp((int)((F(args, "y") * 0.5f + 0.5f) * size), 0, size - 1);
+        var c = px[iy * size + ix];
+        return c.a < 40 ? "clear" : $"#{c.r:X2}{c.g:X2}{c.b:X2}";
+    }
+
+    /// <summary>Write three sample icons into the icons folder: a recolor mask, a static picture (by file name) and a static one (by sidecar).</summary>
+    [TestHook("teams.writeLogoIcons")]
+    static string WriteLogoIcons()
+    {
+        var folder = System.IO.Path.Combine(TeamStore.Folder, "icons");
+        System.IO.Directory.CreateDirectory(folder);
+        void Square(string file, Color inner, Color outer)
+        {
+            const int n = 64;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+            for (var y = 0; y < n; y++)
+            for (var x = 0; x < n; x++)
+                tex.SetPixel(x, y, Mathf.Abs(x - 31.5f) < 16f && Mathf.Abs(y - 31.5f) < 16f ? inner : outer);
+            tex.Apply();
+            System.IO.File.WriteAllBytes(System.IO.Path.Combine(folder, file), TeamIcons.EncodePng(tex));
+            UnityEngine.Object.Destroy(tex);
+        }
+        Square("tlogo-mask.png", Color.white, new Color(0, 0, 0, 0));
+        Square("tlogo-flat.static.png", new Color(0f, 0f, 1f, 1f), new Color(0, 0, 0, 0));
+        Square("tlogo-side.png", new Color(1f, 0.5f, 0f, 1f), new Color(0, 0, 0, 0));
+        System.IO.File.WriteAllText(System.IO.Path.Combine(folder, "tlogo-side.icon.json"), "{ \"mode\": \"static\" }");
+        ImportedIcons.ClearCache();
+        return "written";
+    }
+
+    [TestHook("teams.deleteLogoIcons")]
+    static int DeleteLogoIcons()
+    {
+        var folder = System.IO.Path.Combine(TeamStore.Folder, "icons");
+        var n = 0;
+        foreach (var f in new[] { "tlogo-mask.png", "tlogo-flat.static.png", "tlogo-side.png", "tlogo-side.icon.json" })
+        {
+            var p = System.IO.Path.Combine(folder, f);
+            if (System.IO.File.Exists(p)) { System.IO.File.Delete(p); n++; }
+        }
+        ImportedIcons.ClearCache();
+        return n;
+    }
+
+    /// <summary>How an imported icon is used on this machine: recolor, static or missing.</summary>
+    [TestHook("teams.iconMode")]
+    static string IconMode(Dictionary<string, object?> args)
+    {
+        var icon = ImportedIcons.Get(S(args, "icon"));
+        return icon == null ? "missing" : icon.Recolor ? "recolor" : "static";
+    }
+
+    /// <summary>The logo string stored for a team ("" = none).</summary>
+    [TestHook("teams.teamLogo")]
+    static string TeamLogo(Dictionary<string, object?> args) => TeamRegistry.Instance.GetTeam(S(args, "team"))?.Logo ?? "no such team";
 }

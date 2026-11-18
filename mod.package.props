@@ -1,5 +1,5 @@
 <Project>
-  <!-- No DrakeModsLibs dependency yet; a Libs adapter (LockSmith/RenameIt) would add it as a soft dependency. -->
+  <!-- Needs DrakeModsLibs: the admin window and team picker use its shared window (UkWindow). -->
   <PropertyGroup>
     <ThunderstoreName>DrakesServerTeams</ThunderstoreName>
     <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
@@ -15,5 +15,6 @@
   <ItemGroup>
     <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2351" />
     <ThunderstoreDependency Include="ValheimModding-Jotunn-2.30.2" />
+    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-1.0.5" />
   </ItemGroup>
 </Project>

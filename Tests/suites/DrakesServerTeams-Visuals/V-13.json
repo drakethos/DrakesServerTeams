@@ -1,0 +1,413 @@
+{
+  "name": "V-13 figure wards on cleared ground at night, next to the original: do the flow channels glow and pulse?",
+  "description": "",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearMembers"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setDeathRules",
+      "args": {
+        "enabled": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.writeSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      },
+      "expect": "sample-banner.png",
+      "label": "a custom icon file in the icons folder"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "ember",
+        "title": "Ember",
+        "color": "#E67E22",
+        "icon": "shield",
+        "glow": ""
+      },
+      "label": "team Ember: #E67E22, icon shield"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "tide",
+        "title": "Tide",
+        "color": "#2980B9",
+        "icon": "star",
+        "glow": ""
+      },
+      "label": "team Tide: #2980B9, icon star"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "moss",
+        "title": "Moss",
+        "color": "#27AE60",
+        "icon": "sample-banner",
+        "glow": ""
+      },
+      "label": "team Moss: #27AE60, icon sample-banner"
+    },
+    {
+      "do": "hook",
+      "name": "teams.defineTeam",
+      "args": {
+        "team": "dusk",
+        "title": "Dusk",
+        "color": "#8E44AD",
+        "icon": "diamond",
+        "glow": "#F1C40F"
+      },
+      "label": "team Dusk: #8E44AD, icon diamond"
+    },
+    {
+      "do": "hook",
+      "name": "teams.setTime",
+      "args": {
+        "time": 0.12
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.setAdmin",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.goClearing",
+      "contains": ""
+    },
+    {
+      "do": "wait",
+      "seconds": 2.5
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "teleport",
+      "dx": 30,
+      "dz": 30
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "teams.clearArea",
+      "args": {
+        "radius": 22
+      },
+      "contains": "",
+      "label": "cleared ground: trees, rocks and stones switched off here"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "dusk",
+        "figure": "stone"
+      },
+      "expect": "stone"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "dusk"
+      },
+      "expect": "dusk"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3.0,
+      "dx": -6,
+      "as": "c_stone"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "ember",
+        "figure": "wolf"
+      },
+      "expect": "wolf"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "ember"
+      },
+      "expect": "ember"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3.0,
+      "dx": -2,
+      "as": "c_wolf"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "tide",
+        "figure": "dragon"
+      },
+      "expect": "dragon"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "tide"
+      },
+      "expect": "tide"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3.0,
+      "dx": 2,
+      "as": "c_dragon"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.setFigure",
+      "args": {
+        "team": "moss",
+        "figure": "stag"
+      },
+      "expect": "stag"
+    },
+    {
+      "do": "hook",
+      "name": "teams.assignTo",
+      "args": {
+        "player": "Alice",
+        "team": "moss"
+      },
+      "expect": "moss"
+    },
+    {
+      "do": "place",
+      "prefab": "TeamWard",
+      "dz": 3.0,
+      "dx": 6,
+      "as": "c_stag"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardShot",
+      "args": {
+        "ward": "c_wolf",
+        "file": "teams-close-all-a",
+        "back": 9.0,
+        "height": 2.2,
+        "yaw": 0
+      },
+      "contains": "yaw",
+      "label": "the four wards from the front"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.9
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardShot",
+      "args": {
+        "ward": "c_wolf",
+        "file": "teams-close-all-b",
+        "back": 9.0,
+        "height": 2.2,
+        "yaw": 0
+      },
+      "contains": "yaw",
+      "label": "again, a moment later"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardShot",
+      "args": {
+        "ward": "c_stone",
+        "file": "teams-close-stone",
+        "back": 3.4,
+        "height": 1.5,
+        "yaw": 0
+      },
+      "contains": "yaw",
+      "label": "stone close"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardShot",
+      "args": {
+        "ward": "c_wolf",
+        "file": "teams-close-wolf",
+        "back": 3.4,
+        "height": 1.5,
+        "yaw": 0
+      },
+      "contains": "yaw",
+      "label": "wolf close"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardShot",
+      "args": {
+        "ward": "c_dragon",
+        "file": "teams-close-dragon",
+        "back": 3.4,
+        "height": 1.5,
+        "yaw": 0
+      },
+      "contains": "yaw",
+      "label": "dragon close"
+    },
+    {
+      "do": "hook",
+      "name": "teams.wardShot",
+      "args": {
+        "ward": "c_stag",
+        "file": "teams-close-stag",
+        "back": 3.4,
+        "height": 1.5,
+        "yaw": 0
+      },
+      "contains": "yaw",
+      "label": "stag close"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "ember"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "tide"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "moss"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeTeam",
+      "args": {
+        "team": "dusk"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "teams.removeGraves"
+    },
+    {
+      "do": "hook",
+      "name": "teams.deleteSampleIcon",
+      "args": {
+        "icon": "sample-banner"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesServerTeams"
+    },
+    {
+      "check": "noErrors",
+      "source": "Unity Log"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ public static class TeamsAdmin
     static readonly BepInEx.Logging.ManualLogSource DeathRulesLog = BepInEx.Logging.Logger.CreateLogSource("DrakesServerTeams.Rules");
 
     public const string Usage =
-        "teams panel | teams who | teams assign <player|me|all> <team> | teams forget <player|id:N> | teams setspawn <team> | teams clearspawn <team> | teams seticon <team> <shield|circle|diamond|star|cross> | teams ward [team <team|none> | build|chests|doors <on|off|inherit>] | teams offer <player|all> | teams spawnstones <team> <on|off> | teams setcolor <team> <color> | teams setglow <team> <color|none> | teams deathrules [on|off]";
+        "teams panel | teams who | teams assign <player|me|all> <team> | teams forget <player|id:N> | teams setspawn <team> | teams clearspawn <team> | teams seticon <team> <shield|circle|diamond|star|cross> | teams ward [team <team|none> | build|chests|doors <on|off|inherit> | power <on|off> | capture <0-100|off> <team>] | teams offer <player|all> | teams spawnstones <team> <on|off> | teams setlogo <team> <spec> | teams clearlogo <team> | teams setcolor <team> <color> | teams setglow <team> <color|none> | teams deathrules [on|off]";
 
     public static string Run(string commandLine, string adminName, UnityEngine.Vector3? adminPosition = null)
     {
@@ -117,6 +117,22 @@ public static class TeamsAdmin
                     : $"{st.DisplayName}: start stones {result}.";
             }
 
+            case "setlogo":
+            {
+                if (args.Length < 3)
+                    return "Usage: teams setlogo <team> <base:#color:#border:width|symbol:#color:x:y:scale:rotation:flip|...>  (the logo designer in the admin panel writes this for you)";
+                var error = registry.SetTeamLogo(args[1], args[2]);
+                return error.Length > 0 ? error : $"{registry.GetTeam(args[1])?.DisplayName} has a new logo.";
+            }
+
+            case "clearlogo":
+            {
+                if (args.Length < 2)
+                    return "Usage: teams clearlogo <team>";
+                var error = registry.SetTeamLogo(args[1], "");
+                return error.Length > 0 ? error : $"{registry.GetTeam(args[1])?.DisplayName} uses its plain icon again.";
+            }
+
             case "setcolor":
                 if (args.Length < 3)
                     return "Usage: teams setcolor <team> <#RRGGBB or a name: red, blue, green, gold ...>";
@@ -161,6 +177,13 @@ public static class TeamsAdmin
                     return "Usage: teams seticon <team> <" + string.Join("|", TeamIcons.Shapes) + "|your-file-name>  (custom: icons\\<name>.png)";
                 return registry.SetTeamIcon(args[1], args[2])
                     ? $"{registry.GetTeam(args[1])?.DisplayName} icon: {registry.GetTeam(args[1])?.Icon}."
+                    : $"Unknown team '{args[1]}'.";
+
+            case "setfigure":
+                if (args.Length < 3)
+                    return "Usage: teams setfigure <team> <" + string.Join("|", WardFigures.Ids) + ">  (the figure in the middle of the team's Team Ward)";
+                return registry.SetTeamFigure(args[1], args[2])
+                    ? $"{registry.GetTeam(args[1])?.DisplayName} ward figure: {registry.GetTeam(args[1])?.Figure}."
                     : $"Unknown team '{args[1]}'.";
 
             case "clearspawn":
@@ -210,6 +233,30 @@ public static class TeamsAdmin
         }
         if (args.Length >= 3 && (args[1] == "build" || args[1] == "chests" || args[1] == "doors"))
             return WardFlag(where, ward, args[1], args[2]);
+        if (args.Length >= 3 && args[1].Equals("power", StringComparison.OrdinalIgnoreCase))
+        {
+            var on = args[2].Equals("on", StringComparison.OrdinalIgnoreCase);
+            if (!on && !args[2].Equals("off", StringComparison.OrdinalIgnoreCase))
+                return "Use teams ward power on|off.";
+            TeamWard.SetPower(ward, on);
+            return $"Team Ward is {(on ? "on" : "off")}.";
+        }
+        if (args.Length >= 3 && args[1].Equals("capture", StringComparison.OrdinalIgnoreCase))
+        {
+            // a display test for the rune ring: teams ward capture <0-100|off> [team]
+            if (args[2].Equals("off", StringComparison.OrdinalIgnoreCase))
+            {
+                TeamWard.SetCapture(ward, 0f, null);
+                return "Capture display cleared.";
+            }
+            if (!float.TryParse(args[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var pct))
+                return "Use teams ward capture <0-100|off> [team].";
+            var captor = args.Length >= 4 ? args[3] : null;
+            if (captor == null || TeamRegistry.Instance.GetTeam(captor) == null)
+                return "Name the team that is capturing.";
+            TeamWard.SetCapture(ward, pct / 100f, captor);
+            return $"Capture display: {captor} at {Math.Round(UnityEngine.Mathf.Clamp(pct, 0f, 100f))}%.";
+        }
         var team = TeamRegistry.Instance.GetTeam(PieceTeams.ReadTeam(zdo));
         string Flag(int key, bool global)
         {

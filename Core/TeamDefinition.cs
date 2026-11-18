@@ -26,6 +26,10 @@ public sealed class TeamDefinition
     public string Icon = "shield";
     /// <summary>Color of the player glow and the grave light, "#RRGGBB". Empty = use <see cref="Color"/>.</summary>
     public string GlowColor = "";
+    /// <summary>The team logo recipe (see <see cref="LogoSpec"/>). Empty = the plain <see cref="Icon"/> in the team color.</summary>
+    public string Logo = "";
+    /// <summary>The figure in the middle of this team's Team Ward: stone (the original guard stone), wolf, dragon or stag (see WardFigures).</summary>
+    public string Figure = "stone";
 
     /// <summary>The glow color to use: GlowColor when set, else the team color.</summary>
     public string EffectiveGlowColor() => string.IsNullOrWhiteSpace(GlowColor) ? Color : GlowColor;

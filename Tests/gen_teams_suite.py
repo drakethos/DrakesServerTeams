@@ -378,7 +378,7 @@ T('T-24', 'graves carry the team of the player who died', [
 T('T-25', 'admins change a team icon', [
     *fresh_teams(),
     H('adminCommand', contains='icon: star', label='teams seticon red star', line='seticon red star'),
-    H('setIcon', expect='shield', label='an unknown shape falls back to the default', team='red', icon='banana'),
+    H('setIcon', expect='shield', label='an invalid name falls back to the default (a plain name is a custom icon file)', team='red', icon='not a shape!'),
     H('setIcon', expect='cross', team='red', icon='cross'),
     H('adminCommand', contains='Unknown team', line='seticon purple star'),
     H('setIcon', expect='shield', team='red', icon='shield'),
@@ -675,7 +675,7 @@ T('T-49', 'with RenameIt and DrakeModsLibs installed, Shift+E on a Team Ward is 
     {'do': 'lookAt', 'target': 'ward'},
     {'do': 'interact', 'target': 'ward', 'asPlayer': True, 'alt': True},
     wait(0.5),
-    H('wardPanelOpen', expect=True, label='the Team Ward settings window opened (Shift+E, through the real interact path)'),
+    H('panelTab', expect='Ward', label='the Team Ward settings opened (Shift+E, through the real interact path)'),
     H('renameWindowOpen', expect='no', label='the RenameIt rename window did not'),
     H('closeWardPanel', expect=False),
 ])
@@ -708,6 +708,204 @@ T('T-50', 'start stones are off by default (experimental), the panel has tabs, a
     H('closeWardPanel', expect=False),
 ])
 
+BASE = 'shield:#C0392B:#FFFFFF:0.06'
+STAR = '|star:#FFFFFF:0:0:0.5:0:0'
+
+T('T-51', 'logo designer: specs parse, render, and imported icons recolor or stay static', [
+    *fresh_teams(),
+    # parsing: round trip and refusals
+    H('logoRoundTrip', expect='shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0', label='a spec round-trips (colors upper-cased)', spec='shield:#c0392b:#ffffff:0.06|star:#ffffff:0:0:0.5:0:0'),
+    H('logoRoundTrip', contains='invalid', label='a spec with a missing part is refused', spec='shield:#C0392B'),
+    H('logoRoundTrip', contains='invalid', label='five symbols are too many', spec=BASE + STAR * 5),
+    H('logoRoundTrip', contains='invalid', label='a path in a symbol name is refused', spec=BASE + '|../secret:#FFFFFF:0:0:0.5:0:0'),
+    H('logoRoundTrip', contains='invalid', label='a bad color is refused', spec='shield:red:#FFFFFF:0.06'),
+    H('logoRoundTrip', expect='shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:1.5:-1.5:2:360:1', label='numbers are clamped to sane ranges', spec=BASE + '|star:#FFFFFF:9:-9:9:999:1'),
+    # rendering
+    H('logoPixel', expect='#C0392B', label='the center of a plain logo is the base color', spec=BASE, x=0, y=0),
+    H('logoPixel', expect='clear', label='outside the base is transparent', spec='circle:#C0392B:#FFFFFF:0.06', x=0.9, y=0.9),
+    H('logoPixel', expect='#FFFFFF', label='the border is drawn at the rim', spec='circle:#C0392B:#FFFFFF:0.2', x=0.85, y=0),
+    H('logoPixel', expect='#FFFFFF', label='a white star sits on the center', spec=BASE + STAR, x=0, y=0),
+    H('logoPixel', expect='#C0392B', label='and not beyond its size', spec=BASE + STAR, x=0.6, y=0.1),
+    H('logoPixel', expect='#2980B9', label='a later symbol draws over an earlier one', spec=BASE + STAR + '|circle:#2980B9:0:0:0.2:0:0', x=0, y=0),
+    H('logoPixel', expect='#C0392B', label='a symbol that is not on this machine is skipped, the logo stays', spec=BASE + '|not-an-icon:#FFFFFF:0:0:0.5:0:0', x=0, y=0),
+    # imported icons: recolor vs static
+    H('writeLogoIcons', expect='written', label='drop three sample icons into the icons folder'),
+    H('iconMode', expect='recolor', label='a plain name.png is a recolor mask', icon='tlogo-mask'),
+    H('iconMode', expect='static', label='name.static.png is static', icon='tlogo-flat'),
+    H('iconMode', expect='static', label='a sidecar name.icon.json can say static', icon='tlogo-side'),
+    H('logoPixel', expect='#00FF00', label='a recolor icon takes the layer color', spec=BASE + '|tlogo-mask:#00FF00:0:0:0.8:0:0', x=0, y=0),
+    H('logoPixel', expect='#0000FF', label='a static icon keeps its own colors and ignores the layer color', spec=BASE + '|tlogo-flat:#FF0000:0:0:0.8:0:0', x=0, y=0),
+    H('logoPixel', expect='#FF8000', label='static by sidecar keeps its own orange', spec=BASE + '|tlogo-side:#FF0000:0:0:0.8:0:0', x=0, y=0),
+    H('logoPixel', expect='#C0392B', label='outside the small imported square the base shows', spec=BASE + '|tlogo-mask:#00FF00:0:0:0.8:0:0', x=0.6, y=0),
+    H('deleteLogoIcons', expect=4, label='clean up the sample icons'),
+    # the server side
+    H('adminCommand', contains='new logo', label='teams setlogo stores a valid logo', line='setlogo red ' + BASE + STAR),
+    H('teamLogo', expect='shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0', label='and it is saved on the team', team='red'),
+    H('adminCommand', contains='not valid', label='an invalid logo is refused', line='setlogo red shield:red'),
+    H('teamLogo', expect='shield:#C0392B:#FFFFFF:0.06|star:#FFFFFF:0:0:0.5:0:0', label='the stored logo did not change', team='red'),
+    H('adminCommand', contains='plain icon', label='teams clearlogo', line='clearlogo red'),
+    H('teamLogo', expect='', label='the logo is gone', team='red'),
+])
+
+T('T-52', 'team banners and flags: pieces, models, stamp and cloth picture', [
+    *fresh_teams(),
+    H('bannerPieces', expect=3, label='hanging banner, standing banner and flag are Hammer pieces'),
+    H('bannerPixel', expect='256x512|#8C8C8C', label='no team: a grey tall cloth', team='none', shape='tall', x=0.5, y=0.2),
+    H('bannerPixel', expect='384x256|#8C8C8C', label='no team: a grey wide cloth', team='none', shape='wide', x=0.5, y=0.05),
+    H('adminCommand', contains='new logo', label='red gets a white star logo', line='setlogo red ' + BASE + STAR),
+    H('bannerPixel', expect='256x512|#FFFFFF', label='the logo sits in the middle of the tall cloth', team='red', shape='tall', x=0.5, y=0.66),
+    H('bannerPixel', expect='384x256|#FFFFFF', label='and in the middle of the wide cloth', team='red', shape='wide', x=0.46, y=0.5),
+    H('usePieceTeams', expect=True),
+    *on_team('Alice', 'red'),
+    {'do': 'place', 'prefab': 'TeamBannerHanging', 'dz': 3, 'dx': -4, 'as': 'hang'},
+    {'do': 'place', 'prefab': 'TeamBannerStanding', 'dz': 3, 'as': 'stand'},
+    {'do': 'place', 'prefab': 'TeamFlag', 'dz': 3, 'dx': 4, 'as': 'flag'},
+    wait(1.2),
+    H('pieceTeam', expect='red', label='the server stamped the hanging banner', target='hang'),
+    H('pieceTeam', expect='red', label='the standing banner', target='stand'),
+    H('pieceTeam', expect='red', label='and the flag', target='flag'),
+    H('bannerLook', contains='red|1|', label='the hanging banner shows red with its cloth painted', target='hang'),
+    H('bannerLook', contains='red|1|', label='the standing banner too', target='stand'),
+    H('bannerLook', contains='red|1|', label='and the flag', target='flag'),
+    *on_team('Bob', 'blue'),
+    {'do': 'place', 'prefab': 'TeamBannerStanding', 'dz': 6, 'as': 'other'},
+    wait(1.0),
+    H('pieceTeam', expect='blue', label='a banner Bob builds is blue', target='other'),
+    H('bannerLook', contains='blue|1|', label='and looks blue', target='other'),
+    H('bannerRenderers', contains='model', label='renderers on a placed standing banner (listed in the log)', target='stand'),
+    H('bannerShaders', contains='TeamCloth', label='every banner material has a supported shader (the list is in the log)', target='stand'),
+    # the Team Ward wears the Blender model, facing the way the vanilla stone does
+    play('me'), H('setAdmin', on=True),
+    {'do': 'place', 'prefab': 'TeamWard', 'dz': 9, 'as': 'wardm'}, wait(1.0),
+    H('wardModel', expect='model|shards 4|halos 6|runes 12', label='the Team Ward wears the Blender model: 4 crystals, 6 diamonds, 12 rune segments', ward='wardm'),
+    H('setAdmin', on='auto'),
+])
+
+T('T-53', 'Team Ward on and off, and the capture sweep on the rune ring', [
+    *fresh_teams(), H('setAdmin', on=True),
+    *on_team('Alice', 'red'),
+    {'do': 'place', 'prefab': 'TeamWard', 'dz': 6, 'as': 'w'}, wait(1.2),
+    H('wardState', expect='on|open 1.00|halos 6|captured 0/12|capture 0.00', label='a new ward is on: crystals out, six diamonds, no capture', ward='w'),
+    H('wardSet', contains='power off', label='switch it off', ward='w', power=False),
+    wait(2.4),
+    H('wardState', contains='off|open 0.00|halos 0|', label='off: the crystals have folded in and the diamonds are gone', ward='w'),
+    H('wardSet', contains='power on', label='switch it on again', ward='w', power=True),
+    wait(2.4),
+    H('wardState', contains='on|open 1.00|halos 6|', label='on again: crystals out, diamonds back', ward='w'),
+    H('wardSet', contains='capture 0.50|captor blue', label='blue is half way through capturing it', ward='w', capture=0.5, captor='blue'),
+    wait(3.2),
+    H('wardState', contains='captured 6/12|capture 0.50', label='half the rune ring has changed color', ward='w'),
+    H('wardSet', contains='capture 1.00', label='the capture completes', ward='w', capture=1.0, captor='blue'),
+    wait(3.2),
+    H('wardState', contains='captured 12/12', label='the whole ring is blue', ward='w'),
+    H('adminCommand', contains='cleared', label='teams ward capture off clears it', line='ward capture off'),
+    wait(5.0),
+    H('wardState', contains='captured 0/12|capture 0.00', label='the ring is back to the team color', ward='w'),
+    H('setAdmin', on='auto'),
+])
+
+T('T-54', 'the carried team banner: an item that shows the carrying player team', [
+    *fresh_teams(),
+    H('adminCommand', contains='new logo', label='red gets a logo', line='setlogo red ' + BASE + STAR),
+    *on_team('Alice', 'red'),
+    {'do': 'give', 'prefab': 'TeamBannerCarry', 'equip': True}, wait(1.5),
+    H('carryInfo', expect='item|carried red', label='the banner is in the hand and painted for red'),
+    *on_team('Bob', 'blue'),
+    wait(1.2),
+    H('carryInfo', expect='item|carried blue', label='the same banner follows whoever carries it (now blue)'),
+])
+
+T('T-55', 'diagnostic: how vanilla items sit in the hand (listed in the log)', [
+    H('itemAxes', contains='attach=', label='Torch', prefab='Torch'),
+    H('itemAxes', contains='attach=', label='Club', prefab='Club'),
+    H('itemAxes', contains='attach=', label='SpearFlint', prefab='SpearFlint'),
+    H('itemAxes', contains='attach=', label='our carried banner', prefab='TeamBannerCarry'),
+])
+
+def click(text, nth=0):
+    step = {'do': 'click', 'button': text}
+    if nth:
+        step['nth'] = nth
+    return [step, wait(0.4)]
+
+
+T('T-56', 'logo tab: click through layers, colors, apply, revert and drafts', [
+    *fresh_teams(), H('setAdmin', on=True),
+    H('adminCommand', contains='plain icon', label='red starts without a logo', line='clearlogo red'),
+    H('openPanel', open=True, tab='Logo', contains=''), wait(0.8),
+    *click('Crimson'),
+    H('logoState', contains='red|sel -1|layers 1 star|dirty|shield:', label='base selected; a team without a logo starts from a starter draft that is not applied yet'),
+    # base shape and colors
+    *click('circle'),
+    H('logoState', contains='|dirty|circle:', label='picking a base shape changes the draft'),
+    H('teamLogo', expect='', label='and nothing reached the team', team='red'),
+    # a second symbol becomes its own layer
+    *click('+ Symbol'),
+    H('logoState', contains='sel 1|layers 2 star,star|', label='+ Symbol adds a layer and selects it'),
+    *click('moon'),
+    H('logoState', contains='sel 1|layers 2 star,moon|', label='the symbol buttons change the selected layer only'),
+    {'do': 'click', 'button': 'quick-#2980B9'}, wait(0.4),
+    H('logoState', contains='|moon:#2980B9:', label='a quick color paints the selected symbol'),
+    # back to the base: border color
+    *click('Base: circle'),
+    H('logoState', contains='sel -1|layers 2 star,moon|', label='clicking the base row selects the base'),
+    {'do': 'click', 'button': 'tile-Border'}, wait(0.4),
+    {'do': 'click', 'button': 'quick-#27AE60'}, wait(0.4),
+    H('logoState', contains=':#27AE60:', label='with Border chosen, a quick color paints the border'),
+    H('teamLogo', expect='', label='still nothing applied to the team', team='red'),
+    # apply
+    *click('Apply to team'), wait(0.6),
+    H('teamLogo', contains='circle:', label='Apply to team sends the logo', team='red'),
+    H('logoState', contains='|clean|', label='and the draft is clean'),
+    # reorder and remove
+    *click('+ Symbol'),
+    H('logoState', contains='sel 2|layers 3 star,moon,star|', label='a third layer'),
+    *click('Symbol 2: moon'),
+    H('logoState', contains='sel 1|', label='clicking a layer row selects it'),
+    *click('▲', nth=1),
+    H('logoState', contains='sel 2|layers 3 star,star,moon|', label='the up arrow of that row moves the moon above the star'),
+    *click('✕', nth=1),   # number 0 is the window's own close button
+    H('logoState', contains='layers 2 star,star|', label='the top row remove button removes the top symbol'),
+    # revert
+    *click('Revert'),
+    H('logoState', contains='layers 2 star,moon|clean|', label='Revert brings back the applied logo'),
+    # drafts survive switching team
+    *click('square'),
+    H('logoState', contains='|dirty|square:', label='a new unsaved change'),
+    *click('Saphire'),
+    H('logoState', contains='blue|', label='switched to the other team'),
+    *click('Crimson'),
+    H('logoState', contains='red|sel -1|layers 2 star,moon|dirty|square:', label='the unsaved draft was still there'),
+    *click('Apply to team'), wait(0.6),
+    H('teamLogo', contains='square:', label='and applies', team='red'),
+    H('openPanel', open=False, contains=''),
+    H('setAdmin', on='auto'),
+])
+
+T('T-57', 'ward figures: a team picks the figure in the middle of its Team Ward', [
+    *fresh_teams(), H('setAdmin', on=True),
+    *on_team('Alice', 'red'),
+    {'do': 'place', 'prefab': 'TeamWard', 'dz': 6, 'as': 'w'}, wait(1.2),
+    H('wardFigure', contains='stone|stone_runes:1 slots', label='a team starts with the original guard stone in the middle', ward='w'),
+    H('setFigure', expect='wolf', label='red picks the wolf', team='red', figure='wolf'), wait(1.2),
+    H('wardFigure', contains='figure_wolf:2 slots', label='the wolf stands on the ward: one body mesh with stone and glow materials', ward='w'),
+    H('wardFigure', contains='|channels 10', label='the wolf has its ten glowing flow channels', ward='w'),
+    H('setFigure', expect='dragon', label='then the dragon', team='red', figure='dragon'), wait(1.2),
+    H('wardFigure', contains='figure_dragon:2 slots', label='the dragon replaced the wolf', ward='w'),
+    H('wardFigure', contains='|channels 12', label='the dragon has twelve', ward='w'),
+    H('setFigure', expect='stag', label='then the stag', team='red', figure='stag'), wait(1.2),
+    H('wardFigure', contains='figure_stag:2 slots', label='the stag replaced the dragon', ward='w'),
+    H('wardFigure', contains='|channels 11', label='the stag has eleven', ward='w'),
+    H('setFigure', expect='freya', label='then Freya, borrowed from the game statue', team='red', figure='freya'), wait(1.2),
+    H('wardFigure', contains='freya|default:', label='Freya stands on the ward with her own mesh', ward='w'),
+    H('setFigure', expect='thor', label='then Thor', team='red', figure='thor'), wait(1.2),
+    H('wardFigure', contains='thor|', label='Thor replaced Freya (and has at least one part)', ward='w'),    H('setFigure', expect='stone', label='an unknown figure falls back to the original stone', team='red', figure='unicorn'), wait(1.2),
+    H('wardFigure', contains='stone|stone_runes:1 slots', label='and the original stone is back', ward='w'),
+    H('adminCommand', contains='ward figure: wolf', label='the console command sets it too', line='setfigure red wolf'), wait(1.2),
+    H('wardFigure', contains='wolf|figure_wolf:', label='and the ward follows', ward='w'),
+    H('adminCommand', contains='Usage: teams setfigure', label='a missing figure shows the usage', line='setfigure red'),
+    H('setFigure', expect='stone', label='tidy up', team='red', figure='stone'),
+])
 suite = {
     'name': 'DrakesServerTeams',
     'description': 'Automated regression for DrakesServerTeams: assignment and switching rules, server-signed piece teams on wards, '

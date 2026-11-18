@@ -166,9 +166,9 @@
     },
     {
       "do": "hook",
-      "name": "teams.wardPanelOpen",
-      "expect": true,
-      "label": "the Team Ward settings window opened (Shift+E, through the real interact path)"
+      "name": "teams.panelTab",
+      "expect": "Ward",
+      "label": "the Team Ward settings opened (Shift+E, through the real interact path)"
     },
     {
       "do": "hook",
